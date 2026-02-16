@@ -625,7 +625,44 @@ async def seed_database():
     )
     await db.admins.insert_one(admin.model_dump())
     
-    return {"message": "Database seeded successfully", "admin_email": "admin@glowbeauty.com", "admin_password": "admin123"}
+    return {"message": "Database seeded successfully", "seeded": True, "admin_email": "admin@glowbeauty.com", "admin_password": "admin123"}
+
+# Admin-only: Reset and reseed database
+@api_router.post("/admin/reseed")
+async def reseed_database(admin: dict = Depends(get_current_admin)):
+    """Admin-only: Clear and reseed database with sample data"""
+    # Clear all collections
+    await db.salon_profile.drop()
+    await db.service_categories.drop()
+    await db.services.drop()
+    await db.gallery_images.drop()
+    await db.reviews.drop()
+    await db.offers.drop()
+    # Note: We don't drop admins collection to preserve login
+    
+    # Call seed function logic (without the admin check)
+    return {"message": "Database cleared. Please call /api/seed to reinitialize."}
+
+# Admin-only: Create new admin user
+class AdminCreate(BaseModel):
+    email: str
+    password: str
+    name: str
+
+@api_router.post("/admin/users")
+async def create_admin_user(data: AdminCreate, admin: dict = Depends(get_current_admin)):
+    """Admin-only: Create a new admin user"""
+    existing = await db.admins.find_one({"email": data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Email already exists")
+    
+    new_admin = Admin(
+        email=data.email,
+        password_hash=hash_password(data.password),
+        name=data.name
+    )
+    await db.admins.insert_one(new_admin.model_dump())
+    return {"message": "Admin user created", "email": data.email}
 
 # Include the router in the main app
 app.include_router(api_router)
