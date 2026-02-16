@@ -490,12 +490,17 @@ async def upload_image(file: UploadFile = File(...), admin: dict = Depends(get_c
 
 @api_router.post("/seed")
 async def seed_database():
-    """Seed database with sample data for Dombivli salon"""
+    """Seed database with sample data - only works if database is empty (first-time setup)"""
     
-    # Check if already seeded
+    # Check if already seeded - prevent public writes if data exists
     existing = await db.salon_profile.find_one({})
     if existing:
-        return {"message": "Database already seeded"}
+        return {"message": "Database already seeded", "seeded": False}
+    
+    # Also check if any admin exists - if so, require auth
+    admin_exists = await db.admins.find_one({})
+    if admin_exists:
+        raise HTTPException(status_code=403, detail="Database already initialized. Use admin panel to manage data.")
     
     # Salon Profile - Full Template Data
     salon = SalonProfile(
