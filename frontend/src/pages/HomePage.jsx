@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Star, ArrowRight, Gift, Sparkles } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Clock, Star, ArrowRight, Sparkles, Award, Users, Heart, Shield } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -16,12 +15,9 @@ export default function HomePage() {
 
   const fetchHomeData = async () => {
     try {
-      // Try to seed database (will be ignored if already seeded)
       try {
         await fetch(`${API}/seed`, { method: "POST" });
-      } catch (e) {
-        // Ignore seed errors - database may already be initialized
-      }
+      } catch (e) {}
       
       const res = await fetch(`${API}/home-data`);
       if (res.ok) {
@@ -37,257 +33,322 @@ export default function HomePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-[#FFFCFA]">
         <div className="text-center">
-          <Sparkles className="w-12 h-12 text-[#D69E8E] mx-auto animate-pulse" />
-          <p className="mt-4 text-[#8C7B75]">Loading...</p>
+          <div className="w-16 h-16 border-4 border-[#D69E8E] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="mt-6 text-[#8C7B75] tracking-wide">Loading...</p>
         </div>
       </div>
     );
   }
 
   const { salon, topServices, reviews, offers } = homeData || {};
-
-  // Dynamic content from salon profile
-  const brandAccent = salon?.brandAccent || "";
-  const fullName = salon?.name || "Beauty Studio";
-  const nameWithoutAccent = brandAccent ? fullName.replace(brandAccent, "").trim() : fullName;
   const heroImage = salon?.heroImageUrl || "https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80";
 
+  // Trust badges data
+  const trustBadges = [
+    { icon: Award, value: "5+", label: "Years Experience" },
+    { icon: Users, value: "2000+", label: "Happy Clients" },
+    { icon: Heart, value: "4.9", label: "Rating" },
+    { icon: Shield, value: "100%", label: "Hygiene Standards" },
+  ];
+
   return (
-    <div data-testid="home-page">
-      {/* Hero Section */}
-      <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center">
+    <div data-testid="home-page" className="bg-[#FFFCFA]">
+      
+      {/* ===== HERO SECTION ===== */}
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+        {/* Background Image */}
         <div 
-          className="absolute inset-0 bg-cover bg-center"
+          className="absolute inset-0 bg-cover bg-center scale-105"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
-        <div className="absolute inset-0 hero-overlay" />
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <div className="max-w-2xl">
-            {brandAccent && (
-              <p className="font-accent text-2xl md:text-3xl text-[#9D5C63] mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                {salon?.heroTitle?.split(' ')[0] || "Welcome to"}
-              </p>
-            )}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#4A403A] mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#FFFCFA] via-[#FFFCFA]/90 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#FFFCFA]/50 to-transparent" />
+        
+        {/* Content */}
+        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20">
+          <div className="max-w-xl">
+            {/* Accent Tag */}
+            <div 
+              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full mb-8 shadow-sm"
+              style={{ animationDelay: '0.1s' }}
+            >
+              <Sparkles className="w-4 h-4 text-[#D69E8E]" />
+              <span className="text-sm font-medium text-[#9D5C63] tracking-wide">
+                {salon?.area || "Premium Beauty Services"}
+              </span>
+            </div>
+            
+            {/* Main Heading */}
+            <h1 
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[#4A403A] leading-[1.1] mb-6 animate-fade-in-up"
+              style={{ animationDelay: '0.2s' }}
+            >
               {salon?.name || "Beauty Studio"}
             </h1>
-            <p className="text-lg md:text-xl text-[#8C7B75] mb-8 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              {salon?.heroSubtitle || salon?.tagline || "Your destination for beauty and self-care."}
+            
+            {/* Subheading */}
+            <p 
+              className="text-lg text-[#6B5B54] leading-relaxed mb-10 max-w-md animate-fade-in-up"
+              style={{ animationDelay: '0.3s' }}
+            >
+              {salon?.tagline || "Your destination for beauty and self-care"}
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+            
+            {/* CTA Buttons */}
+            <div 
+              className="flex flex-col sm:flex-row gap-4 animate-fade-in-up"
+              style={{ animationDelay: '0.4s' }}
+            >
               <Link
                 to="/book"
-                className="btn-primary inline-flex items-center justify-center gap-2 bg-[#D69E8E] hover:bg-[#C0806E] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg"
+                className="group inline-flex items-center justify-center gap-3 bg-[#4A403A] hover:bg-[#3A3230] text-white px-8 py-4 rounded-full font-medium text-base shadow-xl hover:shadow-2xl transition-all duration-300"
                 data-testid="hero-book-btn"
               >
                 {salon?.ctaText || "Book Appointment"}
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </Link>
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center gap-2 bg-white border border-[#E6D5D0] text-[#9D5C63] px-8 py-4 rounded-full font-medium text-lg hover:bg-[#FDF8F5] transition-colors"
+                className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-[#E6D5D0] text-[#4A403A] px-8 py-4 rounded-full font-medium text-base hover:bg-white transition-all duration-300"
                 data-testid="hero-services-btn"
               >
-                View Services
+                Explore Services
               </Link>
             </div>
           </div>
         </div>
+
+        {/* Scroll Indicator */}
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
+          <div className="w-6 h-10 border-2 border-[#D69E8E]/50 rounded-full flex items-start justify-center p-2">
+            <div className="w-1.5 h-3 bg-[#D69E8E] rounded-full" />
+          </div>
+        </div>
       </section>
 
-      {/* Active Offers */}
-      {offers && offers.length > 0 && (
-        <section className="py-12 md:py-16 bg-[#FDF8F5]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center gap-3 mb-8">
-              <Gift className="w-6 h-6 text-[#9D5C63]" />
-              <h2 className="text-2xl md:text-3xl font-semibold text-[#4A403A]">
-                Special Offers
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {offers.map((offer, index) => (
-                <Card 
-                  key={offer.id} 
-                  className="offer-card bg-white border-[#E6D5D0] rounded-2xl overflow-hidden animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  data-testid={`offer-card-${index}`}
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-lg font-semibold text-[#4A403A]">{offer.title}</h3>
-                      <span className="bg-[#D69E8E] text-white text-xs px-3 py-1 rounded-full">
-                        Active
-                      </span>
-                    </div>
-                    <p className="text-[#8C7B75] mb-3">{offer.description}</p>
-                    {offer.validTill && (
-                      <p className="text-xs text-[#9D5C63]">
-                        Valid till: {new Date(offer.validTill).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+      {/* ===== TRUST BADGES ===== */}
+      <section className="py-12 border-b border-[#F2E8E4]">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {trustBadges.map((badge, index) => (
+              <div 
+                key={index} 
+                className="text-center group"
+                data-testid={`trust-badge-${index}`}
+              >
+                <div className="inline-flex items-center justify-center w-14 h-14 bg-[#FDF8F5] rounded-2xl mb-4 group-hover:bg-[#D69E8E]/10 transition-colors">
+                  <badge.icon className="w-6 h-6 text-[#D69E8E]" />
+                </div>
+                <p className="text-2xl md:text-3xl font-bold text-[#4A403A] mb-1">{badge.value}</p>
+                <p className="text-sm text-[#8C7B75] tracking-wide">{badge.label}</p>
+              </div>
+            ))}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Top Services */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <p className="font-accent text-xl text-[#9D5C63] mb-2">Our Services</p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-[#4A403A] mb-4">
+      {/* ===== POPULAR SERVICES ===== */}
+      <section className="py-20 md:py-28">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
+              Services
+            </span>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-4">
               Popular Treatments
             </h2>
-            <p className="text-[#8C7B75] max-w-2xl mx-auto">
-              Discover our most loved services that keep our clients coming back
+            <p className="text-[#8C7B75] max-w-md mx-auto">
+              Discover our most loved services, crafted for your beauty needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-            {topServices?.map((service, index) => (
-              <Card 
-                key={service.id} 
-                className="service-card group bg-white border-[#F2E8E4] rounded-2xl overflow-hidden animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
+          {/* Services Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {topServices?.slice(0, 6).map((service, index) => (
+              <Link 
+                key={service.id}
+                to={`/book?service=${encodeURIComponent(service.name)}`}
+                className="group block"
                 data-testid={`service-card-${index}`}
               >
-                {service.imageUrl && (
-                  <div className="img-zoom aspect-[4/3] overflow-hidden">
-                    <img
-                      src={service.imageUrl}
-                      alt={service.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <CardContent className="p-6">
-                  <h3 className="text-lg font-semibold text-[#4A403A] mb-2 group-hover:text-[#9D5C63] transition-colors">
-                    {service.name}
-                  </h3>
-                  {service.description && (
-                    <p className="text-sm text-[#8C7B75] mb-4 line-clamp-2">
-                      {service.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-[#8C7B75]">
-                      <Clock className="w-4 h-4" />
-                      <span>{service.durationMins} mins</span>
+                <div className="relative overflow-hidden rounded-3xl bg-white shadow-sm hover:shadow-xl transition-all duration-500">
+                  {/* Image */}
+                  {service.imageUrl && (
+                    <div className="aspect-[4/3] overflow-hidden">
+                      <img
+                        src={service.imageUrl}
+                        alt={service.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                      />
                     </div>
-                    <p className="text-lg font-semibold text-[#9D5C63]">
-                      ₹{service.priceStartingAt}+
-                    </p>
+                  )}
+                  
+                  {/* Content */}
+                  <div className="p-6">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                      <h3 className="text-lg font-semibold text-[#4A403A] group-hover:text-[#9D5C63] transition-colors">
+                        {service.name}
+                      </h3>
+                      <span className="text-xl font-bold text-[#D69E8E] whitespace-nowrap">
+                        ₹{service.priceStartingAt}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-4 text-sm text-[#8C7B75]">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-4 h-4" />
+                        {service.durationMins} min
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        Book now
+                      </span>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </Link>
             ))}
           </div>
 
-          <div className="text-center mt-10">
+          {/* View All Link */}
+          <div className="text-center mt-12">
             <Link
               to="/services"
-              className="inline-flex items-center gap-2 text-[#9D5C63] font-medium hover:text-[#D69E8E] transition-colors"
+              className="inline-flex items-center gap-2 text-[#4A403A] font-medium hover:text-[#D69E8E] transition-colors group"
               data-testid="view-all-services-link"
             >
               View All Services
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Reviews Section */}
-      {reviews && reviews.length > 0 && (
-        <section className="py-16 md:py-24 bg-[#FDF8F5]">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* ===== SPECIAL OFFERS ===== */}
+      {offers && offers.length > 0 && (
+        <section className="py-20 bg-[#4A403A]">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-12">
-              <p className="font-accent text-xl text-[#9D5C63] mb-2">Testimonials</p>
-              <h2 className="text-3xl md:text-4xl font-semibold text-[#4A403A] mb-4">
-                What Our Clients Say
+              <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
+                Limited Time
+              </span>
+              <h2 className="text-3xl md:text-4xl font-bold text-white">
+                Special Offers
               </h2>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.slice(0, 6).map((review, index) => (
-                <Card 
-                  key={review.id} 
-                  className="review-card bg-white border-[#E6D5D0]/50 rounded-2xl animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
-                  data-testid={`review-card-${index}`}
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {offers.map((offer, index) => (
+                <div 
+                  key={offer.id}
+                  className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 border border-white/10 hover:bg-white/15 transition-colors"
+                  data-testid={`offer-card-${index}`}
                 >
-                  <CardContent className="p-6">
-                    {/* Stars */}
-                    <div className="flex gap-1 mb-4">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < review.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Review Text */}
-                    <p className="text-[#4A403A] mb-4 leading-relaxed">
-                      "{review.text}"
+                  <div className="inline-flex items-center gap-2 bg-[#D69E8E] text-white text-xs font-medium px-3 py-1 rounded-full mb-4">
+                    <Sparkles className="w-3 h-3" />
+                    Active Offer
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2">{offer.title}</h3>
+                  <p className="text-white/70 text-sm leading-relaxed">{offer.description}</p>
+                  {offer.validTill && (
+                    <p className="text-[#D69E8E] text-xs mt-4">
+                      Valid till {new Date(offer.validTill).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                     </p>
-                    
-                    {/* Reviewer */}
-                    <div className="flex items-center gap-3">
-                      {review.avatarUrl ? (
-                        <img
-                          src={review.avatarUrl}
-                          alt={review.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-[#D69E8E] flex items-center justify-center text-white font-medium">
-                          {review.name.charAt(0)}
-                        </div>
-                      )}
-                      <div>
-                        <p className="font-medium text-[#4A403A]">{review.name}</p>
-                        <p className="text-xs text-[#8C7B75]">{review.source}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                  )}
+                </div>
               ))}
             </div>
           </div>
         </section>
       )}
 
-      {/* CTA Section */}
-      <section className="py-16 md:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#4A403A] rounded-3xl p-8 md:p-12 text-center">
-            <p className="font-accent text-2xl text-[#D69E8E] mb-2">
-              {brandAccent ? `Ready to ${brandAccent}?` : "Ready to Book?"}
-            </p>
-            <h2 className="text-3xl md:text-4xl font-semibold text-white mb-6">
-              {salon?.ctaText || "Book Your Appointment Today"}
-            </h2>
-            <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              {salon?.aboutText || "Experience the best in beauty care. Our expert team is ready to pamper you with premium services."}
-            </p>
-            <Link
-              to="/book"
-              className="inline-flex items-center gap-2 bg-[#D69E8E] hover:bg-[#C0806E] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg transition-all duration-300 hover:scale-105"
-              data-testid="cta-book-btn"
-            >
-              {salon?.ctaText || "Book Now"}
-              <ArrowRight className="w-5 h-5" />
-            </Link>
+      {/* ===== TESTIMONIALS ===== */}
+      {reviews && reviews.length > 0 && (
+        <section className="py-20 md:py-28">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
+                Testimonials
+              </span>
+              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A]">
+                Client Love
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {reviews.slice(0, 3).map((review, index) => (
+                <div 
+                  key={review.id}
+                  className="bg-white rounded-3xl p-8 shadow-sm hover:shadow-lg transition-shadow"
+                  data-testid={`review-card-${index}`}
+                >
+                  {/* Stars */}
+                  <div className="flex gap-1 mb-6">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`w-5 h-5 ${
+                          i < review.rating ? "fill-amber-400 text-amber-400" : "text-gray-200"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Quote */}
+                  <p className="text-[#4A403A] leading-relaxed mb-8 text-lg">
+                    "{review.text}"
+                  </p>
+                  
+                  {/* Author */}
+                  <div className="flex items-center gap-4">
+                    {review.avatarUrl ? (
+                      <img
+                        src={review.avatarUrl}
+                        alt={review.name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#D69E8E] to-[#9D5C63] flex items-center justify-center text-white font-semibold text-lg">
+                        {review.name.charAt(0)}
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-[#4A403A]">{review.name}</p>
+                      <p className="text-sm text-[#8C7B75]">{review.source}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
+        </section>
+      )}
+
+      {/* ===== FINAL CTA ===== */}
+      <section className="py-20 md:py-28 bg-[#FDF8F5]">
+        <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+          <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
+            Ready?
+          </span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-6">
+            Book Your Experience
+          </h2>
+          <p className="text-[#6B5B54] text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
+            {salon?.aboutText || "Experience the best in beauty care. Our expert team is ready to pamper you."}
+          </p>
+          <Link
+            to="/book"
+            className="inline-flex items-center gap-3 bg-[#4A403A] hover:bg-[#3A3230] text-white px-10 py-5 rounded-full font-medium text-lg shadow-xl hover:shadow-2xl transition-all duration-300 group"
+            data-testid="cta-book-btn"
+          >
+            {salon?.ctaText || "Book Now"}
+            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </section>
     </div>
