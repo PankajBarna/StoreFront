@@ -162,8 +162,13 @@ Please confirm availability. Thank you!`;
       description: `Booking ${formData.selectedServices.length} service(s)`,
     });
 
-    // Use location.href for better mobile compatibility
-    window.location.href = whatsappUrl;
+    // Navigate to home first, then open WhatsApp
+    navigate("/");
+    
+    // Small delay to ensure navigation happens, then open WhatsApp
+    setTimeout(() => {
+      window.location.href = whatsappUrl;
+    }, 100);
   };
 
   if (loading) {
