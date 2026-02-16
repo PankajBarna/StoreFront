@@ -398,8 +398,8 @@ export default function AdminPage() {
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
             <div className="flex items-center gap-2">
-              <span className="font-accent text-xl text-[#9D5C63]">Glow</span>
-              <span className="font-semibold text-[#4A403A]">Admin</span>
+              <Sparkles className="w-5 h-5 text-[#D69E8E]" />
+              <span className="font-semibold text-[#4A403A]">Admin Dashboard</span>
             </div>
           </div>
           <div className="flex items-center gap-4">
