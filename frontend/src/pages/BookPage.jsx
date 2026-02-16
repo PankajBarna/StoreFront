@@ -143,21 +143,24 @@ Please confirm availability. Thank you!`;
     return encodeURIComponent(message);
   };
 
-  const whatsappUrl = salon 
-    ? `https://wa.me/${salon.whatsappNumber}?text=${generateWhatsAppMessage()}`
-    : "#";
-
   const handleBooking = (e) => {
+    e.preventDefault();
+    
     if (formData.selectedServices.length === 0) {
-      e.preventDefault();
       toast.error("Please select at least one service");
       return;
     }
 
+    // Generate WhatsApp URL with current form data
+    const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${generateWhatsAppMessage()}`;
+    
     // Show success notification
     toast.success("Redirecting to WhatsApp...", {
       description: `Booking ${formData.selectedServices.length} service(s) for ${formData.name || "you"}`,
     });
+
+    // Open WhatsApp in new tab/window
+    window.open(whatsappUrl, '_blank');
 
     // Redirect to home page after a short delay
     setTimeout(() => {
