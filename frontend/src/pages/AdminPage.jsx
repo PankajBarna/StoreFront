@@ -39,6 +39,14 @@ export default function AdminPage() {
   // Dialog states
   const [editDialog, setEditDialog] = useState({ open: false, type: "", data: null });
 
+  // Auto logout when navigating away from /admin
+  useEffect(() => {
+    return () => {
+      // Cleanup: logout when component unmounts (user leaves /admin)
+      localStorage.removeItem("admin_token");
+    };
+  }, []);
+
   useEffect(() => {
     if (token) {
       verifyToken();
