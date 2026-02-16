@@ -372,9 +372,6 @@ export default function AdminPage() {
                 Login
               </Button>
             </form>
-            <p className="text-center text-sm text-[#8C7B75] mt-6">
-              Default: admin@glowbeauty.com / admin123
-            </p>
           </CardContent>
         </Card>
       </div>
