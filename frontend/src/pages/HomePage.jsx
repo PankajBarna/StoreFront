@@ -45,14 +45,6 @@ export default function HomePage() {
   const { salon, topServices, reviews, offers } = homeData || {};
   const heroImage = salon?.heroImageUrl || "https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80";
 
-  // Trust badges data
-  const trustBadges = [
-    { icon: Award, value: "5+", label: "Years Experience" },
-    { icon: Users, value: "2000+", label: "Happy Clients" },
-    { icon: Heart, value: "4.9", label: "Rating" },
-    { icon: Shield, value: "100%", label: "Hygiene Standards" },
-  ];
-
   return (
     <div data-testid="home-page" className="bg-[#FFFCFA]">
       
