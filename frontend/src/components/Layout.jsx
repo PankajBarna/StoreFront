@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { Phone, MapPin, Clock, Instagram, Menu, X } from "lucide-react";
+import { Phone, MapPin, Clock, Instagram, Facebook, Menu, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { MobileBottomBar } from "./MobileBottomBar";
 
@@ -21,6 +21,13 @@ export const Layout = () => {
       if (res.ok) {
         const data = await res.json();
         setSalon(data);
+        // Update CSS variables based on salon colors
+        if (data.primaryColor) {
+          document.documentElement.style.setProperty('--color-primary', data.primaryColor);
+        }
+        if (data.accentColor) {
+          document.documentElement.style.setProperty('--color-accent', data.accentColor);
+        }
       }
     } catch (e) {
       console.error("Error fetching salon data:", e);
@@ -37,6 +44,11 @@ export const Layout = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  // Get display name parts
+  const brandAccent = salon?.brandAccent || "";
+  const fullName = salon?.name || "Beauty Studio";
+  const nameWithoutAccent = brandAccent ? fullName.replace(brandAccent, "").trim() : fullName;
+
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
@@ -45,8 +57,10 @@ export const Layout = () => {
           <div className="flex items-center justify-between h-16 md:h-20">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-2" data-testid="logo-link">
-              <span className="font-accent text-2xl md:text-3xl text-[#9D5C63]">Glow</span>
-              <span className="text-lg md:text-xl font-semibold text-[#4A403A]">Beauty Studio</span>
+              {brandAccent && (
+                <span className="font-accent text-2xl md:text-3xl text-[#9D5C63]">{brandAccent}</span>
+              )}
+              <span className="text-lg md:text-xl font-semibold text-[#4A403A]">{nameWithoutAccent}</span>
             </Link>
 
             {/* Desktop Navigation */}
@@ -84,7 +98,7 @@ export const Layout = () => {
                 className="bg-[#D69E8E] hover:bg-[#C0806E] text-white px-6 py-2.5 rounded-full font-medium text-sm shadow-lg hover:shadow-xl transition-all duration-300"
                 data-testid="header-book-btn"
               >
-                Book Now
+                {salon?.ctaText || "Book Now"}
               </Link>
             </div>
 
@@ -135,11 +149,13 @@ export const Layout = () => {
             {/* Brand */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center gap-2 mb-4">
-                <span className="font-accent text-3xl text-[#D69E8E]">Glow</span>
-                <span className="text-xl font-semibold">Beauty Studio</span>
+                {brandAccent && (
+                  <span className="font-accent text-3xl text-[#D69E8E]">{brandAccent}</span>
+                )}
+                <span className="text-xl font-semibold">{nameWithoutAccent}</span>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed max-w-md">
-                Your destination for beauty and self-care in Dombivli. We offer premium salon services with a personalized touch.
+                {salon?.aboutText || "Your destination for beauty and self-care."}
               </p>
             </div>
 
@@ -186,7 +202,20 @@ export const Layout = () => {
                         className="flex items-center gap-2 hover:text-[#D69E8E]"
                       >
                         <Instagram className="w-4 h-4 text-[#D69E8E]" />
-                        <span>Follow us on Instagram</span>
+                        <span>Follow on Instagram</span>
+                      </a>
+                    </li>
+                  )}
+                  {salon.facebookUrl && (
+                    <li>
+                      <a
+                        href={salon.facebookUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 hover:text-[#D69E8E]"
+                      >
+                        <Facebook className="w-4 h-4 text-[#D69E8E]" />
+                        <span>Follow on Facebook</span>
                       </a>
                     </li>
                   )}
@@ -196,7 +225,7 @@ export const Layout = () => {
           </div>
 
           <div className="border-t border-gray-600 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; {new Date().getFullYear()} Glow Beauty Studio. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} {salon?.name || "Beauty Studio"}. All rights reserved.</p>
           </div>
         </div>
       </footer>
