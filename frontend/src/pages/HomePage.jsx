@@ -16,8 +16,12 @@ export default function HomePage() {
 
   const fetchHomeData = async () => {
     try {
-      // First seed the database if needed
-      await fetch(`${API}/seed`, { method: "POST" });
+      // Try to seed database (will be ignored if already seeded)
+      try {
+        await fetch(`${API}/seed`, { method: "POST" });
+      } catch (e) {
+        // Ignore seed errors - database may already be initialized
+      }
       
       const res = await fetch(`${API}/home-data`);
       if (res.ok) {
