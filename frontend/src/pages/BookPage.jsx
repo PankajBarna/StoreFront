@@ -9,8 +9,6 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -30,7 +28,7 @@ export default function BookPage() {
     selectedServices: [],
     date: null,
     time: "",
-    area: "Dombivli"
+    area: ""
   });
 
   useEffect(() => {
@@ -50,6 +48,13 @@ export default function BookPage() {
       }
     }
   }, [preSelectedService, groupedServices]);
+
+  useEffect(() => {
+    // Set default area from salon profile
+    if (salon?.defaultArea && !formData.area) {
+      setFormData(prev => ({ ...prev, area: salon.defaultArea }));
+    }
+  }, [salon]);
 
   const fetchData = async () => {
     try {
@@ -120,7 +125,7 @@ export default function BookPage() {
       ? formData.selectedServices.map(s => `• ${s.name} (₹${s.priceStartingAt}+, ${s.durationMins} mins)`).join("\n")
       : "Not selected";
     
-    const message = `Hi! I'd like to book an appointment at Glow Beauty Studio.
+    const message = `Hi! I'd like to book an appointment at ${salon?.name || "the salon"}.
 
 *Name:* ${formData.name || "Not provided"}
 
@@ -441,6 +446,25 @@ Please confirm availability. Thank you!`;
                 )}
               </CardContent>
             </Card>
+
+            {/* Booking Tips - Dynamic from salon profile */}
+            {salon?.bookingTips && salon.bookingTips.length > 0 && (
+              <Card className="bg-white border-[#E6D5D0] rounded-2xl">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base text-[#4A403A]">Booking Tips</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2 text-sm text-[#8C7B75]">
+                    {salon.bookingTips.map((tip, index) => (
+                      <li key={index} className="flex items-start gap-2">
+                        <span className="text-[#D69E8E]">•</span>
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
