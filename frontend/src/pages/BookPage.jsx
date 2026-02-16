@@ -119,13 +119,26 @@ export default function BookPage() {
   const totalPrice = formData.selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
   const totalDuration = formData.selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
 
-  const generateWhatsAppMessage = () => {
-    const dateStr = formData.date ? format(formData.date, "dd MMM yyyy") : "Not selected";
-    const servicesText = formData.selectedServices.length > 0
-      ? formData.selectedServices.map(s => `• ${s.name} (₹${s.priceStartingAt}+, ${s.durationMins} mins)`).join("\n")
-      : "Not selected";
+  const handleBooking = (e) => {
+    e.preventDefault();
     
-    const message = `Hi! I'd like to book an appointment at ${salon?.name || "the salon"}.
+    if (formData.selectedServices.length === 0) {
+      toast.error("Please select at least one service");
+      return;
+    }
+
+    if (!salon?.whatsappNumber) {
+      toast.error("WhatsApp number not available");
+      return;
+    }
+
+    // Build message directly here to avoid closure issues
+    const dateStr = formData.date ? format(formData.date, "dd MMM yyyy") : "Not selected";
+    const servicesText = formData.selectedServices
+      .map(s => `• ${s.name} (₹${s.priceStartingAt}+, ${s.durationMins} mins)`)
+      .join("\n");
+    
+    const message = `Hi! I'd like to book an appointment at ${salon.name}.
 
 *Name:* ${formData.name || "Not provided"}
 
@@ -136,39 +149,21 @@ ${servicesText}
 
 *Preferred Date:* ${dateStr}
 *Preferred Time:* ${formData.time || "Not selected"}
-*Area:* ${formData.area}
+*Area:* ${formData.area || "Not provided"}
 
 Please confirm availability. Thank you!`;
-    
-    return encodeURIComponent(message);
-  };
 
-  const handleBooking = (e) => {
-    e.preventDefault();
-    
-    if (formData.selectedServices.length === 0) {
-      toast.error("Please select at least one service");
-      return;
-    }
-
-    // Generate WhatsApp URL with current form data
-    const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${generateWhatsAppMessage()}`;
+    // Build WhatsApp URL
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${encodedMessage}`;
     
     // Show success notification
-    toast.success("Redirecting to WhatsApp...", {
-      description: `Booking ${formData.selectedServices.length} service(s) for ${formData.name || "you"}`,
+    toast.success("Opening WhatsApp...", {
+      description: `Booking ${formData.selectedServices.length} service(s)`,
     });
 
-    // Open WhatsApp in new tab/window
-    window.open(whatsappUrl, '_blank');
-
-    // Redirect to home page after a short delay
-    setTimeout(() => {
-      toast.success("Booking request sent!", {
-        description: "Please complete your booking on WhatsApp. We'll confirm your appointment shortly.",
-      });
-      navigate("/");
-    }, 1500);
+    // Use location.href for better mobile compatibility
+    window.location.href = whatsappUrl;
   };
 
   if (loading) {
