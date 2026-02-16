@@ -321,10 +321,9 @@ export default function AdminPage() {
         <Card className="w-full max-w-md border-[#E6D5D0] rounded-2xl">
           <CardHeader className="text-center">
             <div className="flex items-center justify-center gap-2 mb-4">
-              <span className="font-accent text-2xl text-[#9D5C63]">Glow</span>
-              <span className="text-lg font-semibold text-[#4A403A]">Admin</span>
+              <Sparkles className="w-8 h-8 text-[#D69E8E]" />
             </div>
-            <CardTitle className="text-2xl text-[#4A403A]">Welcome Back</CardTitle>
+            <CardTitle className="text-2xl text-[#4A403A]">Admin Login</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
