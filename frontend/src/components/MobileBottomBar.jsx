@@ -1,7 +1,11 @@
 import { Phone, MapPin, MessageCircle } from "lucide-react";
+import { useLocation } from "react-router-dom";
 
 export const MobileBottomBar = ({ salon }) => {
-  if (!salon) return null;
+  const location = useLocation();
+  
+  // Hide on book page since it has its own booking form
+  if (!salon || location.pathname === "/book") return null;
 
   const whatsappMessage = encodeURIComponent(
     `Hi! I'd like to book an appointment at ${salon.name}.`
