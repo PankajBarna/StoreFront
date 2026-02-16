@@ -813,8 +813,27 @@ function SalonEditForm({ data, onSave }) {
   );
 }
 
-function ServiceEditForm({ data, categories, onSave }) {
+function ServiceEditForm({ data, categories, onSave, onCreateCategory, refreshCategories }) {
   const [form, setForm] = useState(data || { active: true });
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setCreatingCategory(true);
+    try {
+      await onCreateCategory({ name: newCategoryName.trim(), order: categories.length });
+      await refreshCategories();
+      setNewCategoryName("");
+      setShowNewCategory(false);
+      toast.success("Category created!");
+    } catch (e) {
+      toast.error("Failed to create category");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
   
   return (
     <>
@@ -828,14 +847,56 @@ function ServiceEditForm({ data, categories, onSave }) {
         </div>
         <div className="space-y-2">
           <Label>Category</Label>
-          <Select value={form.categoryId || ""} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
-            <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
-            <SelectContent>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          {!showNewCategory ? (
+            <div className="flex gap-2">
+              <Select value={form.categoryId || ""} onValueChange={(v) => setForm({ ...form, categoryId: v })}>
+                <SelectTrigger className="flex-1"><SelectValue placeholder="Select category" /></SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowNewCategory(true)}
+                className="shrink-0"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                New
+              </Button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input 
+                placeholder="New category name" 
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                className="flex-1"
+                data-testid="new-category-input"
+              />
+              <Button 
+                type="button"
+                size="sm"
+                onClick={handleCreateCategory}
+                disabled={creatingCategory || !newCategoryName.trim()}
+                className="bg-[#D69E8E] hover:bg-[#C0806E] shrink-0"
+              >
+                {creatingCategory ? "..." : "Add"}
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                onClick={() => { setShowNewCategory(false); setNewCategoryName(""); }}
+                className="shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
