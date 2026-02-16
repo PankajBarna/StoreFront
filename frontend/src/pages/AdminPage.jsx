@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { 
   LogIn, LogOut, Eye, EyeOff, Plus, Edit, Trash2, ToggleLeft, ToggleRight,
-  Sparkles, Menu, X, Home, Scissors, Image, Star, Gift, Settings
+  Sparkles, Menu, X, Home, Scissors, Image, Star, Gift, Settings, Search
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
