@@ -401,7 +401,7 @@ Please confirm availability. Thank you!`;
                       ? "bg-[#25D366] hover:bg-[#20BD5C] text-white hover:scale-[1.02]"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
-                  onClick={(e) => formData.selectedServices.length === 0 && e.preventDefault()}
+                  onClick={handleBooking}
                   data-testid="book-whatsapp-btn"
                 >
                   <MessageCircle className="w-6 h-6" />
