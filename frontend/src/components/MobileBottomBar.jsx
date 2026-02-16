@@ -4,7 +4,7 @@ export const MobileBottomBar = ({ salon }) => {
   if (!salon) return null;
 
   const whatsappMessage = encodeURIComponent(
-    `Hi! I'd like to book an appointment at Glow Beauty Studio.`
+    `Hi! I'd like to book an appointment at ${salon.name}.`
   );
   const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${whatsappMessage}`;
 
@@ -30,7 +30,7 @@ export const MobileBottomBar = ({ salon }) => {
           data-testid="mobile-whatsapp-btn"
         >
           <MessageCircle className="w-5 h-5" />
-          <span>Book on WhatsApp</span>
+          <span>{salon.ctaText || "Book on WhatsApp"}</span>
         </a>
 
         {/* Directions Button */}
