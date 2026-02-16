@@ -38,6 +38,9 @@ export default function AdminPage() {
   
   // Dialog states
   const [editDialog, setEditDialog] = useState({ open: false, type: "", data: null });
+  
+  // Search state
+  const [serviceSearch, setServiceSearch] = useState("");
 
   // Auto logout when navigating away from /admin
   useEffect(() => {
