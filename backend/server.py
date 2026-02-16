@@ -37,6 +37,19 @@ security = HTTPBearer()
 
 # ============== MODELS ==============
 
+class StatBadge(BaseModel):
+    value: str
+    label: str
+
+class FAQ(BaseModel):
+    question: str
+    answer: str
+
+class Policy(BaseModel):
+    title: str
+    icon: str  # icon name: clock, alert, credit-card, shield
+    points: List[str]
+
 class SalonProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
@@ -70,6 +83,11 @@ class SalonProfile(BaseModel):
     heroSubtitle: str
     ctaText: str
     bookingTips: List[str] = []
+    # Stats/Trust Badges
+    stats: List[StatBadge] = []
+    # Policies & FAQs
+    policies: List[Policy] = []
+    faqs: List[FAQ] = []
     # SEO
     metaTitle: Optional[str] = None
     metaDescription: Optional[str] = None
