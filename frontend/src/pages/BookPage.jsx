@@ -18,6 +18,7 @@ const API = `${BACKEND_URL}/api`;
 
 export default function BookPage() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const preSelectedService = searchParams.get("service") || "";
 
   const [salon, setSalon] = useState(null);
