@@ -169,6 +169,9 @@ class SalonProfileUpdate(BaseModel):
     heroSubtitle: Optional[str] = None
     ctaText: Optional[str] = None
     bookingTips: Optional[List[str]] = None
+    stats: Optional[List[dict]] = None
+    policies: Optional[List[dict]] = None
+    faqs: Optional[List[dict]] = None
     metaTitle: Optional[str] = None
     metaDescription: Optional[str] = None
 
