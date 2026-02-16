@@ -57,55 +57,63 @@ export default function HomePage() {
     <div data-testid="home-page" className="bg-[#FFFCFA]">
       
       {/* ===== HERO SECTION ===== */}
-      <section className="relative min-h-[90vh] flex items-center overflow-hidden">
-        {/* Background Image */}
+      <section className="relative min-h-[100vh] flex items-center overflow-hidden">
+        {/* Background Image - Full Coverage */}
         <div 
-          className="absolute inset-0 bg-cover bg-center scale-105"
+          className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${heroImage})` }}
         />
         
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[#FFFCFA] via-[#FFFCFA]/90 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#FFFCFA]/50 to-transparent" />
+        {/* Dark Luxury Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
         
-        {/* Content */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-20">
-          <div className="max-w-xl">
-            {/* Accent Tag */}
-            <div 
-              className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full mb-8 shadow-sm"
-              style={{ animationDelay: '0.1s' }}
-            >
-              <Sparkles className="w-4 h-4 text-[#D69E8E]" />
-              <span className="text-sm font-medium text-[#9D5C63] tracking-wide">
-                {salon?.area || "Premium Beauty Services"}
+        {/* Decorative Elements */}
+        <div className="absolute top-20 left-10 w-32 h-32 border border-white/10 rounded-full" />
+        <div className="absolute bottom-32 right-20 w-48 h-48 border border-white/5 rounded-full" />
+        <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-[#D69E8E] rounded-full animate-pulse" />
+        <div className="absolute bottom-1/3 left-1/3 w-1.5 h-1.5 bg-white/50 rounded-full animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        {/* Content - Centered */}
+        <div className="relative z-10 w-full">
+          <div className="max-w-7xl mx-auto px-6 lg:px-8 py-20 text-center">
+            {/* Accent Line */}
+            <div className="flex items-center justify-center gap-4 mb-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+              <div className="w-12 h-px bg-[#D69E8E]" />
+              <span className="text-sm font-medium text-[#D69E8E] tracking-[0.3em] uppercase">
+                {salon?.area || "Premium Beauty"}
               </span>
+              <div className="w-12 h-px bg-[#D69E8E]" />
             </div>
             
             {/* Main Heading */}
             <h1 
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-[#4A403A] leading-[1.1] mb-6 animate-fade-in-up"
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-white leading-[1.05] mb-8 animate-fade-in-up tracking-tight"
               style={{ animationDelay: '0.2s' }}
             >
               {salon?.name || "Beauty Studio"}
             </h1>
             
+            {/* Elegant Divider */}
+            <div className="flex items-center justify-center gap-3 mb-8 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <Sparkles className="w-5 h-5 text-[#D69E8E]" />
+            </div>
+            
             {/* Subheading */}
             <p 
-              className="text-lg text-[#6B5B54] leading-relaxed mb-10 max-w-md animate-fade-in-up"
-              style={{ animationDelay: '0.3s' }}
+              className="text-lg md:text-xl text-white/80 leading-relaxed mb-12 max-w-2xl mx-auto animate-fade-in-up font-light"
+              style={{ animationDelay: '0.4s' }}
             >
               {salon?.tagline || "Your destination for beauty and self-care"}
             </p>
             
             {/* CTA Buttons */}
             <div 
-              className="flex flex-col sm:flex-row gap-4 animate-fade-in-up"
-              style={{ animationDelay: '0.4s' }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up"
+              style={{ animationDelay: '0.5s' }}
             >
               <Link
                 to="/book"
-                className="group inline-flex items-center justify-center gap-3 bg-[#4A403A] hover:bg-[#3A3230] text-white px-8 py-4 rounded-full font-medium text-base shadow-xl hover:shadow-2xl transition-all duration-300"
+                className="group inline-flex items-center justify-center gap-3 bg-[#D69E8E] hover:bg-[#C48B7D] text-white px-10 py-5 rounded-full font-medium text-base shadow-2xl hover:shadow-[#D69E8E]/25 transition-all duration-500 hover:scale-105"
                 data-testid="hero-book-btn"
               >
                 {salon?.ctaText || "Book Appointment"}
@@ -113,24 +121,52 @@ export default function HomePage() {
               </Link>
               <Link
                 to="/services"
-                className="inline-flex items-center justify-center gap-2 bg-white/80 backdrop-blur-sm border border-[#E6D5D0] text-[#4A403A] px-8 py-4 rounded-full font-medium text-base hover:bg-white transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/30 hover:border-white/60 text-white px-10 py-5 rounded-full font-medium text-base backdrop-blur-sm transition-all duration-500 hover:bg-white/10"
                 data-testid="hero-services-btn"
               >
                 Explore Services
               </Link>
+            </div>
+            
+            {/* Bottom Stats Bar */}
+            <div 
+              className="mt-20 pt-10 border-t border-white/10 animate-fade-in-up"
+              style={{ animationDelay: '0.6s' }}
+            >
+              <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+                <div className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">5+</p>
+                  <p className="text-sm text-white/60 tracking-wide">Years</p>
+                </div>
+                <div className="w-px h-12 bg-white/20 hidden md:block" />
+                <div className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">2000+</p>
+                  <p className="text-sm text-white/60 tracking-wide">Happy Clients</p>
+                </div>
+                <div className="w-px h-12 bg-white/20 hidden md:block" />
+                <div className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">4.9</p>
+                  <p className="text-sm text-white/60 tracking-wide">Rating</p>
+                </div>
+                <div className="w-px h-12 bg-white/20 hidden md:block" />
+                <div className="text-center">
+                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">50+</p>
+                  <p className="text-sm text-white/60 tracking-wide">Services</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-[#D69E8E]/50 rounded-full flex items-start justify-center p-2">
+          <div className="w-6 h-10 border-2 border-white/30 rounded-full flex items-start justify-center p-2">
             <div className="w-1.5 h-3 bg-[#D69E8E] rounded-full" />
           </div>
         </div>
       </section>
 
-      {/* ===== TRUST BADGES ===== */}
+      {/* ===== TRUST BADGES - Removed since stats are now in hero ===== */}
       <section className="py-12 border-b border-[#F2E8E4]">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
