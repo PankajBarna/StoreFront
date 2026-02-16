@@ -157,18 +157,16 @@ Please confirm availability. Thank you!`;
     const encodedMessage = encodeURIComponent(message);
     const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${encodedMessage}`;
     
+    // Open WhatsApp in new tab first
+    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+    
     // Show success notification
-    toast.success("Opening WhatsApp...", {
-      description: `Booking ${formData.selectedServices.length} service(s)`,
+    toast.success("Booking request sent!", {
+      description: "Please complete your booking on WhatsApp.",
     });
 
-    // Navigate to home first, then open WhatsApp
+    // Navigate to homepage
     navigate("/");
-    
-    // Small delay to ensure navigation happens, then open WhatsApp
-    setTimeout(() => {
-      window.location.href = whatsappUrl;
-    }, 100);
   };
 
   if (loading) {
