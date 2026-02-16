@@ -497,17 +497,42 @@ async def seed_database():
     if existing:
         return {"message": "Database already seeded"}
     
-    # Salon Profile
+    # Salon Profile - Full Template Data
     salon = SalonProfile(
         id="salon-1",
+        # Basic Info
         name="Glow Beauty Studio",
+        brandAccent="Glow",
+        tagline="Your destination for beauty and self-care",
+        aboutText="We offer premium salon services with a personalized touch. Our expert team is dedicated to making you look and feel your best.",
+        # Location
         area="Dombivli East",
         address="Shop No. 12, Ganga Complex, Near Railway Station, Dombivli East, Maharashtra 421201",
+        defaultArea="Dombivli",
+        # Contact
         phone="+91 98765 43210",
         whatsappNumber="918879878493",
         googleMapsUrl="https://maps.google.com/?q=19.2183,73.0878",
         openingHours="Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM",
-        instagramUrl="https://instagram.com/glowbeautystudio"
+        # Social
+        instagramUrl="https://instagram.com/glowbeautystudio",
+        # Branding
+        heroImageUrl="https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80",
+        primaryColor="#D69E8E",
+        accentColor="#9D5C63",
+        # Content
+        heroTitle="Welcome to Premium Beauty Care",
+        heroSubtitle="Experience the best in beauty services. Our expert team is ready to pamper you with personalized treatments.",
+        ctaText="Book Appointment",
+        bookingTips=[
+            "Book at least 1 day in advance for regular services",
+            "Bridal packages require 2-week advance booking",
+            "Arrive 10 minutes early for your appointment",
+            "Cancellations accepted up to 2 hours before"
+        ],
+        # SEO
+        metaTitle="Glow Beauty Studio - Premium Salon in Dombivli",
+        metaDescription="Your destination for premium beauty services in Dombivli. Hair, skin, nails, bridal packages and more."
     )
     await db.salon_profile.insert_one(salon.model_dump())
     
