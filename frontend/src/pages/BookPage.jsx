@@ -141,6 +141,33 @@ Please confirm availability. Thank you!`;
     ? `https://wa.me/${salon.whatsappNumber}?text=${generateWhatsAppMessage()}`
     : "#";
 
+  const handleBooking = (e) => {
+    if (formData.selectedServices.length === 0) {
+      e.preventDefault();
+      toast.error("Please select at least one service");
+      return;
+    }
+
+    // Show success notification
+    toast.success("Redirecting to WhatsApp...", {
+      description: `Booking ${formData.selectedServices.length} service(s) for ${formData.name || "you"}`,
+    });
+
+    // Clear form after a short delay (to allow the link to open)
+    setTimeout(() => {
+      setFormData({
+        name: "",
+        selectedServices: [],
+        date: null,
+        time: "",
+        area: "Dombivli"
+      });
+      toast.success("Booking request sent!", {
+        description: "Please complete your booking on WhatsApp. We'll confirm your appointment shortly.",
+      });
+    }, 1000);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
