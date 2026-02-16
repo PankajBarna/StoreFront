@@ -44,28 +44,34 @@ export default function HomePage() {
 
   const { salon, topServices, reviews, offers } = homeData || {};
 
+  // Dynamic content from salon profile
+  const brandAccent = salon?.brandAccent || "";
+  const fullName = salon?.name || "Beauty Studio";
+  const nameWithoutAccent = brandAccent ? fullName.replace(brandAccent, "").trim() : fullName;
+  const heroImage = salon?.heroImageUrl || "https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80";
+
   return (
     <div data-testid="home-page">
       {/* Hero Section */}
       <section className="relative min-h-[70vh] md:min-h-[80vh] flex items-center">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: `url(https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80)` 
-          }}
+          style={{ backgroundImage: `url(${heroImage})` }}
         />
         <div className="absolute inset-0 hero-overlay" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
           <div className="max-w-2xl">
-            <p className="font-accent text-2xl md:text-3xl text-[#9D5C63] mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-              Welcome to
-            </p>
+            {brandAccent && (
+              <p className="font-accent text-2xl md:text-3xl text-[#9D5C63] mb-2 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                {salon?.heroTitle?.split(' ')[0] || "Welcome to"}
+              </p>
+            )}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[#4A403A] mb-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              Glow Beauty Studio
+              {salon?.name || "Beauty Studio"}
             </h1>
             <p className="text-lg md:text-xl text-[#8C7B75] mb-8 leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-              Your destination for beauty and self-care in Dombivli. Experience premium salon services with a personalized touch.
+              {salon?.heroSubtitle || salon?.tagline || "Your destination for beauty and self-care."}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
               <Link
@@ -73,7 +79,7 @@ export default function HomePage() {
                 className="btn-primary inline-flex items-center justify-center gap-2 bg-[#D69E8E] hover:bg-[#C0806E] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg"
                 data-testid="hero-book-btn"
               >
-                Book Appointment
+                {salon?.ctaText || "Book Appointment"}
                 <ArrowRight className="w-5 h-5" />
               </Link>
               <Link
@@ -260,19 +266,21 @@ export default function HomePage() {
       <section className="py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-[#4A403A] rounded-3xl p-8 md:p-12 text-center">
-            <p className="font-accent text-2xl text-[#D69E8E] mb-2">Ready to Glow?</p>
+            <p className="font-accent text-2xl text-[#D69E8E] mb-2">
+              {brandAccent ? `Ready to ${brandAccent}?` : "Ready to Book?"}
+            </p>
             <h2 className="text-3xl md:text-4xl font-semibold text-white mb-6">
-              Book Your Appointment Today
+              {salon?.ctaText || "Book Your Appointment Today"}
             </h2>
             <p className="text-gray-300 mb-8 max-w-2xl mx-auto">
-              Experience the best in beauty care. Our expert team is ready to pamper you with premium services.
+              {salon?.aboutText || "Experience the best in beauty care. Our expert team is ready to pamper you with premium services."}
             </p>
             <Link
               to="/book"
               className="inline-flex items-center gap-2 bg-[#D69E8E] hover:bg-[#C0806E] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg transition-all duration-300 hover:scale-105"
               data-testid="cta-book-btn"
             >
-              Book on WhatsApp
+              {salon?.ctaText || "Book Now"}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
