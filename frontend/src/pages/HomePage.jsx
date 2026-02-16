@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Clock, Star, ArrowRight, Sparkles, Award, Users, Heart, Shield } from "lucide-react";
+import { Clock, Star, ArrowRight, Sparkles } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
