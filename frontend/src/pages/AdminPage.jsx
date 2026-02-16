@@ -734,7 +734,13 @@ export default function AdminPage() {
           
           {/* Service Edit */}
           {editDialog.type === "service" && (
-            <ServiceEditForm data={editDialog.data} categories={categories} onSave={handleSaveService} />
+            <ServiceEditForm 
+              data={editDialog.data} 
+              categories={categories} 
+              onSave={handleSaveService}
+              onCreateCategory={handleSaveCategory}
+              refreshCategories={fetchAllData}
+            />
           )}
           
           {/* Gallery Edit */}
