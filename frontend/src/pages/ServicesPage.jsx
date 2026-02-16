@@ -63,7 +63,7 @@ export default function ServicesPage() {
               data-testid={`service-category-${group.category.name.toLowerCase().replace(/\s+/g, '-')}`}
             >
               {/* Category Header */}
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-4 mb-8 mt-12">
                 <div className="h-px flex-1 bg-[#E6D5D0]" />
                 <h2 className="text-2xl md:text-3xl font-semibold text-[#4A403A]">
                   {group.category.name}
