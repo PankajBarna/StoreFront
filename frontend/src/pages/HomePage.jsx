@@ -167,25 +167,6 @@ export default function HomePage() {
       </section>
 
       {/* ===== TRUST BADGES - Removed since stats are now in hero ===== */}
-      <section className="py-12 border-b border-[#F2E8E4]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {trustBadges.map((badge, index) => (
-              <div 
-                key={index} 
-                className="text-center group"
-                data-testid={`trust-badge-${index}`}
-              >
-                <div className="inline-flex items-center justify-center w-14 h-14 bg-[#FDF8F5] rounded-2xl mb-4 group-hover:bg-[#D69E8E]/10 transition-colors">
-                  <badge.icon className="w-6 h-6 text-[#D69E8E]" />
-                </div>
-                <p className="text-2xl md:text-3xl font-bold text-[#4A403A] mb-1">{badge.value}</p>
-                <p className="text-sm text-[#8C7B75] tracking-wide">{badge.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ===== POPULAR SERVICES ===== */}
       <section className="py-20 md:py-28">
