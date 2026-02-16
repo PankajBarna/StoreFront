@@ -556,6 +556,63 @@ async def seed_database():
             "Arrive 10 minutes early for your appointment",
             "Cancellations accepted up to 2 hours before"
         ],
+        # Stats/Trust Badges
+        stats=[
+            StatBadge(value="5+", label="Years Experience"),
+            StatBadge(value="2000+", label="Happy Clients"),
+            StatBadge(value="4.9", label="Rating"),
+            StatBadge(value="50+", label="Services")
+        ],
+        # Policies
+        policies=[
+            Policy(
+                title="Appointment Policy",
+                icon="clock",
+                points=[
+                    "Please arrive 10 minutes before your scheduled appointment",
+                    "Late arrivals may result in reduced service time or rescheduling",
+                    "Walk-ins are welcome but appointments are given priority"
+                ]
+            ),
+            Policy(
+                title="Cancellation Policy",
+                icon="alert",
+                points=[
+                    "Cancel at least 2 hours before your appointment",
+                    "Repeated no-shows may require advance payment for future bookings",
+                    "Bridal packages require 48 hours notice for cancellation"
+                ]
+            ),
+            Policy(
+                title="Payment Policy",
+                icon="credit-card",
+                points=[
+                    "We accept Cash, UPI, and all major cards",
+                    "Bridal packages require 50% advance payment",
+                    "Prices are subject to change without prior notice"
+                ]
+            ),
+            Policy(
+                title="Health & Safety",
+                icon="shield",
+                points=[
+                    "All tools are sterilized between clients",
+                    "Please inform us of any allergies or skin conditions",
+                    "Patch tests are recommended for color and chemical treatments"
+                ]
+            )
+        ],
+        # FAQs
+        faqs=[
+            FAQ(question="Do I need to book an appointment in advance?", answer="While walk-ins are welcome, we highly recommend booking in advance to ensure your preferred time slot is available. For bridal services, please book at least 2 weeks in advance."),
+            FAQ(question="What payment methods do you accept?", answer="We accept cash, all major credit/debit cards, UPI payments (Google Pay, PhonePe, Paytm), and bank transfers for larger packages."),
+            FAQ(question="How long does a bridal makeup session take?", answer="A complete bridal makeup session typically takes 2-3 hours, including hair styling. We recommend arriving at least 3 hours before the event time."),
+            FAQ(question="Do you offer home services?", answer="Yes, we offer home services for bridal makeup and special occasions. Additional charges apply based on location. Please contact us for details."),
+            FAQ(question="What products do you use?", answer="We use premium, professional-grade products from brands like L'Oreal Professional, Schwarzkopf, O3+, VLCC, and more. We also offer organic and herbal options upon request."),
+            FAQ(question="Can I see the products before my treatment?", answer="Absolutely! We believe in transparency. Our staff will show you the products before use and explain the procedure."),
+            FAQ(question="Do you offer gift cards or packages?", answer="Yes! Gift cards are available for any amount. We also have special packages for birthdays, anniversaries, and festivals. Contact us for current offers."),
+            FAQ(question="Is parking available near the salon?", answer="Yes, there is public parking available nearby. You can also find street parking on the main road.")
+        ],
         # SEO
         metaTitle="Glow Beauty Studio - Premium Salon in Dombivli",
         metaDescription="Your destination for premium beauty services in Dombivli. Hair, skin, nails, bridal packages and more."
