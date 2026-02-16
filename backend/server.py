@@ -466,7 +466,7 @@ async def seed_database():
         area="Dombivli East",
         address="Shop No. 12, Ganga Complex, Near Railway Station, Dombivli East, Maharashtra 421201",
         phone="+91 98765 43210",
-        whatsappNumber="919876543210",
+        whatsappNumber="918879878493",
         googleMapsUrl="https://maps.google.com/?q=19.2183,73.0878",
         openingHours="Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM",
         instagramUrl="https://instagram.com/glowbeautystudio"

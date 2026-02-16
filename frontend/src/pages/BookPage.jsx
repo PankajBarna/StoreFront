@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MessageCircle, Phone, MapPin, Clock, Calendar, User, Sparkles } from "lucide-react";
+import { MessageCircle, Phone, MapPin, Clock, Calendar, User, Sparkles, Check, X } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -18,12 +20,12 @@ export default function BookPage() {
   const preSelectedService = searchParams.get("service") || "";
 
   const [salon, setSalon] = useState(null);
-  const [services, setServices] = useState([]);
+  const [groupedServices, setGroupedServices] = useState([]);
   const [loading, setLoading] = useState(true);
   
   const [formData, setFormData] = useState({
     name: "",
-    service: preSelectedService,
+    selectedServices: [],
     date: null,
     time: "",
     area: "Dombivli"
@@ -34,16 +36,24 @@ export default function BookPage() {
   }, []);
 
   useEffect(() => {
-    if (preSelectedService) {
-      setFormData(prev => ({ ...prev, service: preSelectedService }));
+    // Pre-select service from URL param
+    if (preSelectedService && groupedServices.length > 0) {
+      const allServices = groupedServices.flatMap(g => g.services);
+      const matchedService = allServices.find(s => s.name === preSelectedService);
+      if (matchedService && !formData.selectedServices.find(s => s.id === matchedService.id)) {
+        setFormData(prev => ({
+          ...prev,
+          selectedServices: [...prev.selectedServices, matchedService]
+        }));
+      }
     }
-  }, [preSelectedService]);
+  }, [preSelectedService, groupedServices]);
 
   const fetchData = async () => {
     try {
       const [salonRes, servicesRes] = await Promise.all([
         fetch(`${API}/salon`),
-        fetch(`${API}/services`)
+        fetch(`${API}/services/grouped`)
       ]);
       
       if (salonRes.ok) {
@@ -53,7 +63,7 @@ export default function BookPage() {
       
       if (servicesRes.ok) {
         const servicesData = await servicesRes.json();
-        setServices(servicesData);
+        setGroupedServices(servicesData);
       }
     } catch (e) {
       console.error("Error fetching data:", e);
@@ -70,19 +80,60 @@ export default function BookPage() {
     "6:00 PM", "6:30 PM", "7:00 PM", "7:30 PM"
   ];
 
+  const toggleService = (service) => {
+    setFormData(prev => {
+      const exists = prev.selectedServices.find(s => s.id === service.id);
+      if (exists) {
+        return {
+          ...prev,
+          selectedServices: prev.selectedServices.filter(s => s.id !== service.id)
+        };
+      } else {
+        return {
+          ...prev,
+          selectedServices: [...prev.selectedServices, service]
+        };
+      }
+    });
+  };
+
+  const removeService = (serviceId) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedServices: prev.selectedServices.filter(s => s.id !== serviceId)
+    }));
+  };
+
+  const isServiceSelected = (serviceId) => {
+    return formData.selectedServices.some(s => s.id === serviceId);
+  };
+
+  // Calculate totals
+  const totalPrice = formData.selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
+  const totalDuration = formData.selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
+
   const generateWhatsAppMessage = () => {
     const dateStr = formData.date ? format(formData.date, "dd MMM yyyy") : "Not selected";
+    const servicesText = formData.selectedServices.length > 0
+      ? formData.selectedServices.map(s => `• ${s.name} (₹${s.priceStartingAt}+, ${s.durationMins} mins)`).join("\n")
+      : "Not selected";
+    
     const message = `Hi! I'd like to book an appointment at Glow Beauty Studio.
 
-Name: ${formData.name || "Not provided"}
-Service: ${formData.service || "Not selected"}
-Preferred Date: ${dateStr}
-Preferred Time: ${formData.time || "Not selected"}
-Area: ${formData.area}
+*Name:* ${formData.name || "Not provided"}
+
+*Services:*
+${servicesText}
+
+*Estimated Total:* ₹${totalPrice}+ (${totalDuration} mins)
+
+*Preferred Date:* ${dateStr}
+*Preferred Time:* ${formData.time || "Not selected"}
+*Area:* ${formData.area}
 
 Please confirm availability. Thank you!`;
     
-    return message;
+    return encodeURIComponent(message);
   };
 
   const whatsappUrl = salon 
@@ -110,19 +161,19 @@ Please confirm availability. Thank you!`;
             Book Your Appointment
           </h1>
           <p className="text-[#8C7B75] max-w-2xl mx-auto">
-            Fill in your details below and we'll confirm your booking via WhatsApp
+            Select one or more services and we'll confirm your booking via WhatsApp
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Booking Form */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Name Input */}
             <Card className="bg-white border-[#E6D5D0] rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-xl text-[#4A403A]">Appointment Details</CardTitle>
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-[#4A403A]">Your Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Name */}
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-[#4A403A]">Your Name</Label>
                   <div className="relative">
@@ -138,80 +189,59 @@ Please confirm availability. Thank you!`;
                   </div>
                 </div>
 
-                {/* Service Selection */}
-                <div className="space-y-2">
-                  <Label className="text-[#4A403A]">Select Service</Label>
-                  <Select 
-                    value={formData.service} 
-                    onValueChange={(value) => setFormData({ ...formData, service: value })}
-                  >
-                    <SelectTrigger 
-                      className="rounded-xl border-[#E6D5D0] focus:border-[#D69E8E] focus:ring-[#D69E8E]/20"
-                      data-testid="book-service-select"
-                    >
-                      <SelectValue placeholder="Choose a service" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {services.map((service) => (
-                        <SelectItem key={service.id} value={service.name}>
-                          {service.name} - ₹{service.priceStartingAt}+
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Date Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-[#4A403A]">Preferred Date</Label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full justify-start text-left font-normal rounded-xl border-[#E6D5D0] hover:bg-[#FDF8F5]"
+                          data-testid="book-date-picker"
+                        >
+                          <Calendar className="mr-2 h-5 w-5 text-[#8C7B75]" />
+                          {formData.date ? (
+                            format(formData.date, "PPP")
+                          ) : (
+                            <span className="text-[#8C7B75]">Pick a date</span>
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComponent
+                          mode="single"
+                          selected={formData.date}
+                          onSelect={(date) => setFormData({ ...formData, date })}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
 
-                {/* Date Selection */}
-                <div className="space-y-2">
-                  <Label className="text-[#4A403A]">Preferred Date</Label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start text-left font-normal rounded-xl border-[#E6D5D0] hover:bg-[#FDF8F5]"
-                        data-testid="book-date-picker"
+                  {/* Time Selection */}
+                  <div className="space-y-2">
+                    <Label className="text-[#4A403A]">Preferred Time</Label>
+                    <Select 
+                      value={formData.time} 
+                      onValueChange={(value) => setFormData({ ...formData, time: value })}
+                    >
+                      <SelectTrigger 
+                        className="rounded-xl border-[#E6D5D0] focus:border-[#D69E8E] focus:ring-[#D69E8E]/20"
+                        data-testid="book-time-select"
                       >
-                        <Calendar className="mr-2 h-5 w-5 text-[#8C7B75]" />
-                        {formData.date ? (
-                          format(formData.date, "PPP")
-                        ) : (
-                          <span className="text-[#8C7B75]">Pick a date</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={formData.date}
-                        onSelect={(date) => setFormData({ ...formData, date })}
-                        disabled={(date) => date < new Date()}
-                        initialFocus
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Time Selection */}
-                <div className="space-y-2">
-                  <Label className="text-[#4A403A]">Preferred Time</Label>
-                  <Select 
-                    value={formData.time} 
-                    onValueChange={(value) => setFormData({ ...formData, time: value })}
-                  >
-                    <SelectTrigger 
-                      className="rounded-xl border-[#E6D5D0] focus:border-[#D69E8E] focus:ring-[#D69E8E]/20"
-                      data-testid="book-time-select"
-                    >
-                      <SelectValue placeholder="Select time slot" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeSlots.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        <SelectValue placeholder="Select time" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeSlots.map((time) => (
+                          <SelectItem key={time} value={time}>
+                            {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Area */}
@@ -229,95 +259,163 @@ Please confirm availability. Thank you!`;
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Service Selection */}
+            <Card className="bg-white border-[#E6D5D0] rounded-2xl">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-[#4A403A]">Select Services</CardTitle>
+                <p className="text-sm text-[#8C7B75]">Choose one or more services you'd like to book</p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {groupedServices.map((group) => (
+                  <div key={group.category.id}>
+                    <h3 className="text-sm font-semibold text-[#9D5C63] uppercase tracking-wide mb-3">
+                      {group.category.name}
+                    </h3>
+                    <div className="space-y-2">
+                      {group.services.map((service) => (
+                        <div
+                          key={service.id}
+                          onClick={() => toggleService(service)}
+                          className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all ${
+                            isServiceSelected(service.id)
+                              ? "bg-[#D69E8E]/10 border-2 border-[#D69E8E]"
+                              : "bg-[#FDF8F5] border-2 border-transparent hover:border-[#E6D5D0]"
+                          }`}
+                          data-testid={`service-checkbox-${service.id}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                              isServiceSelected(service.id)
+                                ? "bg-[#D69E8E] border-[#D69E8E]"
+                                : "border-[#E6D5D0]"
+                            }`}>
+                              {isServiceSelected(service.id) && (
+                                <Check className="w-3 h-3 text-white" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium text-[#4A403A]">{service.name}</p>
+                              <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
+                            </div>
+                          </div>
+                          <p className="font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar - Summary & Contact */}
+          <div className="space-y-6">
+            {/* Selected Services Summary */}
+            <Card className="bg-white border-[#E6D5D0] rounded-2xl sticky top-24">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg text-[#4A403A]">Booking Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {formData.selectedServices.length === 0 ? (
+                  <p className="text-sm text-[#8C7B75] text-center py-4">
+                    No services selected yet
+                  </p>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {formData.selectedServices.map((service) => (
+                        <div 
+                          key={service.id} 
+                          className="flex items-center justify-between bg-[#FDF8F5] p-3 rounded-lg"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#4A403A] truncate">{service.name}</p>
+                            <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</span>
+                            <button
+                              onClick={() => removeService(service.id)}
+                              className="p-1 hover:bg-[#E6D5D0] rounded-full transition-colors"
+                              data-testid={`remove-service-${service.id}`}
+                            >
+                              <X className="w-4 h-4 text-[#8C7B75]" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Totals */}
+                    <div className="border-t border-[#E6D5D0] pt-4 space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-[#8C7B75]">Estimated Duration</span>
+                        <span className="font-medium text-[#4A403A]">{totalDuration} mins</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[#8C7B75]">Estimated Total</span>
+                        <span className="text-lg font-bold text-[#9D5C63]">₹{totalPrice}+</span>
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {/* Book Button */}
                 <a
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#20BD5C] text-white py-4 rounded-full font-medium text-lg shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                  className={`flex items-center justify-center gap-3 w-full py-4 rounded-full font-medium text-lg shadow-lg transition-all duration-300 ${
+                    formData.selectedServices.length > 0
+                      ? "bg-[#25D366] hover:bg-[#20BD5C] text-white hover:scale-[1.02]"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  }`}
+                  onClick={(e) => formData.selectedServices.length === 0 && e.preventDefault()}
                   data-testid="book-whatsapp-btn"
                 >
                   <MessageCircle className="w-6 h-6" />
                   Book via WhatsApp
                 </a>
 
-                <p className="text-center text-sm text-[#8C7B75]">
-                  You'll be redirected to WhatsApp with your booking details
+                <p className="text-center text-xs text-[#8C7B75]">
+                  {formData.selectedServices.length > 0 
+                    ? "You'll be redirected to WhatsApp with your booking details"
+                    : "Select at least one service to continue"
+                  }
                 </p>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Salon Info Sidebar */}
-          <div className="space-y-6">
             {/* Contact Card */}
             <Card className="bg-[#FDF8F5] border-[#E6D5D0] rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg text-[#4A403A]">Contact Us</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base text-[#4A403A]">Need Help?</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3">
                 {salon && (
                   <>
                     <a
                       href={`tel:${salon.phone}`}
-                      className="flex items-center gap-3 text-[#4A403A] hover:text-[#D69E8E]"
+                      className="flex items-center gap-3 text-sm text-[#4A403A] hover:text-[#D69E8E]"
                       data-testid="sidebar-phone"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#D69E8E]/10 flex items-center justify-center">
-                        <Phone className="w-5 h-5 text-[#D69E8E]" />
+                      <div className="w-8 h-8 rounded-full bg-[#D69E8E]/10 flex items-center justify-center">
+                        <Phone className="w-4 h-4 text-[#D69E8E]" />
                       </div>
                       <span>{salon.phone}</span>
                     </a>
                     
-                    <a
-                      href={salon.googleMapsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-start gap-3 text-[#4A403A] hover:text-[#D69E8E]"
-                      data-testid="sidebar-address"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#D69E8E]/10 flex items-center justify-center flex-shrink-0">
-                        <MapPin className="w-5 h-5 text-[#D69E8E]" />
+                    <div className="flex items-start gap-3 text-sm text-[#4A403A]">
+                      <div className="w-8 h-8 rounded-full bg-[#D69E8E]/10 flex items-center justify-center flex-shrink-0">
+                        <Clock className="w-4 h-4 text-[#D69E8E]" />
                       </div>
-                      <span className="text-sm">{salon.address}</span>
-                    </a>
-                    
-                    <div className="flex items-start gap-3 text-[#4A403A]">
-                      <div className="w-10 h-10 rounded-full bg-[#D69E8E]/10 flex items-center justify-center flex-shrink-0">
-                        <Clock className="w-5 h-5 text-[#D69E8E]" />
-                      </div>
-                      <span className="text-sm">{salon.openingHours}</span>
+                      <span className="text-xs">{salon.openingHours}</span>
                     </div>
                   </>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* Quick Tips */}
-            <Card className="bg-white border-[#E6D5D0] rounded-2xl">
-              <CardHeader>
-                <CardTitle className="text-lg text-[#4A403A]">Booking Tips</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3 text-sm text-[#8C7B75]">
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#D69E8E]">•</span>
-                    <span>Book at least 1 day in advance for regular services</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#D69E8E]">•</span>
-                    <span>Bridal packages require 2-week advance booking</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#D69E8E]">•</span>
-                    <span>Arrive 10 minutes early for your appointment</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="text-[#D69E8E]">•</span>
-                    <span>Cancellations accepted up to 2 hours before</span>
-                  </li>
-                </ul>
               </CardContent>
             </Card>
           </div>
