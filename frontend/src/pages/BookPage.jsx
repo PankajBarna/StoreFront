@@ -395,21 +395,20 @@ Please confirm availability. Thank you!`;
                 )}
 
                 {/* Book Button */}
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  type="button"
                   className={`flex items-center justify-center gap-3 w-full py-4 rounded-full font-medium text-lg shadow-lg transition-all duration-300 ${
                     formData.selectedServices.length > 0
                       ? "bg-[#25D366] hover:bg-[#20BD5C] text-white hover:scale-[1.02]"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
                   onClick={handleBooking}
+                  disabled={!salon}
                   data-testid="book-whatsapp-btn"
                 >
                   <MessageCircle className="w-6 h-6" />
                   Book via WhatsApp
-                </a>
+                </button>
 
                 <p className="text-center text-xs text-[#8C7B75]">
                   {formData.selectedServices.length > 0 
