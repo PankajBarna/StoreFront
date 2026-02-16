@@ -120,33 +120,27 @@ export default function HomePage() {
               </Link>
             </div>
             
-            {/* Bottom Stats Bar */}
-            <div 
-              className="mt-20 pt-10 border-t border-white/10 animate-fade-in-up"
-              style={{ animationDelay: '0.6s' }}
-            >
-              <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
-                <div className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">5+</p>
-                  <p className="text-sm text-white/60 tracking-wide">Years</p>
-                </div>
-                <div className="w-px h-12 bg-white/20 hidden md:block" />
-                <div className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">2000+</p>
-                  <p className="text-sm text-white/60 tracking-wide">Happy Clients</p>
-                </div>
-                <div className="w-px h-12 bg-white/20 hidden md:block" />
-                <div className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">4.9</p>
-                  <p className="text-sm text-white/60 tracking-wide">Rating</p>
-                </div>
-                <div className="w-px h-12 bg-white/20 hidden md:block" />
-                <div className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-white mb-1">50+</p>
-                  <p className="text-sm text-white/60 tracking-wide">Services</p>
+            {/* Bottom Stats Bar - Dynamic */}
+            {salon?.stats && salon.stats.length > 0 && (
+              <div 
+                className="mt-20 pt-10 border-t border-white/10 animate-fade-in-up"
+                style={{ animationDelay: '0.6s' }}
+              >
+                <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16">
+                  {salon.stats.map((stat, index) => (
+                    <div key={index} className="flex items-center gap-8 md:gap-16">
+                      <div className="text-center">
+                        <p className="text-3xl md:text-4xl font-bold text-white mb-1">{stat.value}</p>
+                        <p className="text-sm text-white/60 tracking-wide">{stat.label}</p>
+                      </div>
+                      {index < salon.stats.length - 1 && (
+                        <div className="w-px h-12 bg-white/20 hidden md:block" />
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -157,8 +151,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ===== TRUST BADGES - Removed since stats are now in hero ===== */}
 
       {/* ===== POPULAR SERVICES ===== */}
       <section className="py-20 md:py-28">
