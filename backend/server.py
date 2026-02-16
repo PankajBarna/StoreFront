@@ -129,8 +129,12 @@ class Admin(BaseModel):
 
 class SalonProfileUpdate(BaseModel):
     name: Optional[str] = None
+    brandAccent: Optional[str] = None
+    tagline: Optional[str] = None
+    aboutText: Optional[str] = None
     area: Optional[str] = None
     address: Optional[str] = None
+    defaultArea: Optional[str] = None
     phone: Optional[str] = None
     whatsappNumber: Optional[str] = None
     googleMapsUrl: Optional[str] = None
@@ -138,6 +142,17 @@ class SalonProfileUpdate(BaseModel):
     upiId: Optional[str] = None
     upiQrImageUrl: Optional[str] = None
     instagramUrl: Optional[str] = None
+    facebookUrl: Optional[str] = None
+    heroImageUrl: Optional[str] = None
+    logoUrl: Optional[str] = None
+    primaryColor: Optional[str] = None
+    accentColor: Optional[str] = None
+    heroTitle: Optional[str] = None
+    heroSubtitle: Optional[str] = None
+    ctaText: Optional[str] = None
+    bookingTips: Optional[List[str]] = None
+    metaTitle: Optional[str] = None
+    metaDescription: Optional[str] = None
 
 class ServiceCategoryCreate(BaseModel):
     name: str
