@@ -503,16 +503,29 @@ export default function AdminPage() {
           {/* Services Tab */}
           {activeTab === "services" && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-2xl font-semibold text-[#4A403A]">Services</h2>
-                <Button
-                  onClick={() => setEditDialog({ open: true, type: "service", data: null })}
-                  className="bg-[#D69E8E] hover:bg-[#C0806E] rounded-full"
-                  data-testid="add-service-btn"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Service
-                </Button>
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  {/* Search Box */}
+                  <div className="relative flex-1 sm:flex-none sm:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B75]" />
+                    <Input
+                      placeholder="Search services..."
+                      value={serviceSearch}
+                      onChange={(e) => setServiceSearch(e.target.value)}
+                      className="pl-10 rounded-xl border-[#E6D5D0] focus:border-[#D69E8E]"
+                      data-testid="service-search-input"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => setEditDialog({ open: true, type: "service", data: null })}
+                    className="bg-[#D69E8E] hover:bg-[#C0806E] rounded-full whitespace-nowrap"
+                    data-testid="add-service-btn"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Service
+                  </Button>
+                </div>
               </div>
               <Card className="border-[#E6D5D0] rounded-2xl overflow-hidden">
                 <Table>
@@ -527,7 +540,12 @@ export default function AdminPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {services.map((service) => (
+                    {services
+                      .filter(service => 
+                        service.name.toLowerCase().includes(serviceSearch.toLowerCase()) ||
+                        categories.find(c => c.id === service.categoryId)?.name.toLowerCase().includes(serviceSearch.toLowerCase())
+                      )
+                      .map((service) => (
                       <TableRow key={service.id} data-testid={`service-row-${service.id}`}>
                         <TableCell className="font-medium">{service.name}</TableCell>
                         <TableCell>
