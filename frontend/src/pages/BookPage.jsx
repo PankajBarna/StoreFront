@@ -154,19 +154,13 @@ Please confirm availability. Thank you!`;
       description: `Booking ${formData.selectedServices.length} service(s) for ${formData.name || "you"}`,
     });
 
-    // Clear form after a short delay (to allow the link to open)
+    // Redirect to home page after a short delay
     setTimeout(() => {
-      setFormData({
-        name: "",
-        selectedServices: [],
-        date: null,
-        time: "",
-        area: "Dombivli"
-      });
       toast.success("Booking request sent!", {
         description: "Please complete your booking on WhatsApp. We'll confirm your appointment shortly.",
       });
-    }, 1000);
+      navigate("/");
+    }, 1500);
   };
 
   if (loading) {
