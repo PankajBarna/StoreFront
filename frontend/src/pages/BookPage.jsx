@@ -82,7 +82,7 @@ Area: ${formData.area}
 
 Please confirm availability. Thank you!`;
     
-    return encodeURIComponent(message);
+    return message;
   };
 
   const whatsappUrl = salon 
