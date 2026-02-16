@@ -40,16 +40,39 @@ security = HTTPBearer()
 class SalonProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    # Basic Info
     name: str
+    brandAccent: str  # e.g., "Glow" - the stylized part of the name
+    tagline: str
+    aboutText: str
+    # Location
     area: str
     address: str
+    defaultArea: str  # Default area for booking form
+    # Contact
     phone: str
     whatsappNumber: str
     googleMapsUrl: str
     openingHours: str
+    # Social & Payment
     upiId: Optional[str] = None
     upiQrImageUrl: Optional[str] = None
     instagramUrl: Optional[str] = None
+    facebookUrl: Optional[str] = None
+    # Branding
+    heroImageUrl: Optional[str] = None
+    logoUrl: Optional[str] = None
+    # Colors (CSS values)
+    primaryColor: str = "#D69E8E"
+    accentColor: str = "#9D5C63"
+    # Content
+    heroTitle: str
+    heroSubtitle: str
+    ctaText: str
+    bookingTips: List[str] = []
+    # SEO
+    metaTitle: Optional[str] = None
+    metaDescription: Optional[str] = None
 
 class ServiceCategory(BaseModel):
     model_config = ConfigDict(extra="ignore")
