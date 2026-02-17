@@ -396,7 +396,7 @@ async def get_working_hours_for_date(salon: dict, date: datetime) -> tuple:
     return "10:00", "20:00"
 
 async def get_available_slots(salon_id: str, service_id: str, date_str: str, total_duration: int = None) -> List[dict]:
-    """Calculate available time slots for a given date and service"""
+    """Calculate available time slots for a given date and service (considers totalSeats)"""
     salon = await db.salon_profile.find_one({}, {"_id": 0})
     if not salon:
         return []
@@ -408,6 +408,7 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
     # Use total_duration if provided (for multiple services), otherwise use service duration
     duration = total_duration if total_duration else service.get("durationMins", 30)
     slot_duration = salon.get("slotDurationMins", 30)
+    total_seats = salon.get("totalSeats", 1)
     
     # Parse the date
     try:
@@ -435,7 +436,7 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
         "salonId": salon_id,
         "startTime": {"$gte": start_of_day.isoformat(), "$lt": end_of_day.isoformat()},
         "status": {"$nin": [BookingStatus.CANCELLED]}
-    }, {"_id": 0}).to_list(100)
+    }, {"_id": 0}).to_list(500)
     
     # Build list of booked time ranges
     booked_ranges = []
@@ -451,13 +452,15 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
     while current_slot + timedelta(minutes=duration) <= day_end:
         slot_end = current_slot + timedelta(minutes=duration)
         
-        # Check if slot conflicts with any booking
-        is_available = True
+        # Count overlapping bookings for this slot
+        overlapping_count = 0
         for b_start, b_end in booked_ranges:
             # Check for overlap
             if not (slot_end <= b_start or current_slot >= b_end):
-                is_available = False
-                break
+                overlapping_count += 1
+        
+        # Slot is available if overlapping count is less than total seats
+        is_available = overlapping_count < total_seats
         
         # Don't show past slots for today
         now = datetime.now(IST)
@@ -465,10 +468,12 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
             is_available = False
         
         if is_available:
+            remaining_seats = total_seats - overlapping_count
             slots.append({
                 "startTime": current_slot.isoformat(),
                 "endTime": slot_end.isoformat(),
-                "display": current_slot.strftime("%I:%M %p")
+                "display": current_slot.strftime("%I:%M %p"),
+                "remainingSeats": remaining_seats
             })
         
         current_slot += timedelta(minutes=slot_duration)
