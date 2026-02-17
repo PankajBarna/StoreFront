@@ -757,6 +757,15 @@ async def update_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(g
     profile = await db.salon_profile.find_one({}, {"_id": 0})
     return profile
 
+@api_router.patch("/admin/salon")
+async def patch_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(get_salon_admin)):
+    """Partial update for salon profile"""
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if update_data:
+        await db.salon_profile.update_one({}, {"$set": update_data})
+    profile = await db.salon_profile.find_one({}, {"_id": 0})
+    return profile
+
 # Categories CRUD
 @api_router.post("/admin/categories")
 async def create_category(data: ServiceCategoryCreate, admin: dict = Depends(get_salon_admin)):
