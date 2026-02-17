@@ -243,7 +243,7 @@ export default function BookPage() {
 *Services:*
 ${servicesText}
 
-*Estimated Total:* ₹${totalPrice}+ (${totalDuration} mins)
+*Estimated Total:* ₹${whatsappTotalPrice}+ (${whatsappTotalDuration} mins)
 
 *Preferred Date:* ${formData.date ? format(formData.date, "dd MMM yyyy") : "Flexible"}
 *Preferred Time:* ${formData.time || "Flexible"}
