@@ -898,6 +898,12 @@ export default function SalonDashboardPage() {
                 <Sparkles className="w-4 h-4 text-[#D69E8E]" />
                 <span className="text-sm text-[#8C7B75]">{tooltip.booking.serviceName || getServiceName(tooltip.booking.serviceId)}</span>
               </div>
+              {tooltip.booking.staffName && (
+                <div className="flex items-center gap-2">
+                  <User className="w-4 h-4 text-[#9D5C63]" />
+                  <span className="text-sm text-[#9D5C63] font-medium">Staff: {tooltip.booking.staffName}</span>
+                </div>
+              )}
               {tooltip.booking.notes && (
                 <div className="flex items-start gap-2 pt-2 border-t border-[#E6D5D0]">
                   <FileText className="w-4 h-4 text-[#D69E8E] mt-0.5" />
