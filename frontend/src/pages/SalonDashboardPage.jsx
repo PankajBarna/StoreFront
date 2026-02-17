@@ -633,6 +633,39 @@ export default function SalonDashboardPage() {
                 </div>
               </div>
               
+              {/* Staff Assignment */}
+              <div className="bg-[#FDF8F5] rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <User className="w-5 h-5 text-[#9D5C63]" />
+                    <div>
+                      <p className="text-sm text-[#8C7B75]">Assigned Staff</p>
+                      {selectedBooking.staffName ? (
+                        <p className="font-medium text-[#4A403A]">{selectedBooking.staffName}</p>
+                      ) : (
+                        <p className="text-sm text-amber-600">Not assigned</p>
+                      )}
+                    </div>
+                  </div>
+                  {["pending", "confirmed"].includes(selectedBooking.status) && (
+                    <Select
+                      value={selectedStaffId || selectedBooking.staffId || ""}
+                      onValueChange={setSelectedStaffId}
+                    >
+                      <SelectTrigger className="w-36 h-9 rounded-lg border-[#E6D5D0] text-sm">
+                        <SelectValue placeholder="Assign staff" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">None</SelectItem>
+                        {staff.map((s) => (
+                          <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
+              
               {/* Notes */}
               {selectedBooking.notes && (
                 <div className="bg-[#FDF8F5] rounded-xl p-4">
