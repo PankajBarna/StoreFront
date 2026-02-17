@@ -476,7 +476,11 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
     return slots
 
 async def check_slot_available(salon_id: str, start_time: str, end_time: str, exclude_booking_id: str = None) -> bool:
-    """Check if a time slot is available (no overlapping bookings)"""
+    """Check if a time slot is available (considers totalSeats for parallel bookings)"""
+    # Get salon to check total seats
+    salon = await db.salon_profile.find_one({}, {"_id": 0})
+    total_seats = salon.get("totalSeats", 1) if salon else 1
+    
     query = {
         "salonId": salon_id,
         "status": {"$nin": [BookingStatus.CANCELLED]},
@@ -488,8 +492,11 @@ async def check_slot_available(salon_id: str, start_time: str, end_time: str, ex
     if exclude_booking_id:
         query["id"] = {"$ne": exclude_booking_id}
     
-    existing = await db.bookings.find_one(query, {"_id": 0})
-    return existing is None
+    # Count overlapping bookings
+    overlapping_count = await db.bookings.count_documents(query)
+    
+    # Available if overlapping bookings are less than total seats
+    return overlapping_count < total_seats
 
 # ============== PUBLIC ROUTES ==============
 
