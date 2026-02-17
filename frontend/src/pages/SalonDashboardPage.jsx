@@ -654,14 +654,14 @@ export default function SalonDashboardPage() {
                   </div>
                   {["pending", "confirmed"].includes(selectedBooking.status) && (
                     <Select
-                      value={selectedStaffId || selectedBooking.staffId || ""}
-                      onValueChange={setSelectedStaffId}
+                      value={selectedStaffId || selectedBooking.staffId || "none"}
+                      onValueChange={(val) => setSelectedStaffId(val === "none" ? "" : val)}
                     >
                       <SelectTrigger className="w-36 h-9 rounded-lg border-[#E6D5D0] text-sm">
                         <SelectValue placeholder="Assign staff" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">None</SelectItem>
+                        <SelectItem value="none">None</SelectItem>
                         {staff.map((s) => (
                           <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
                         ))}
