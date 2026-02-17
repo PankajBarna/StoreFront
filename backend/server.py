@@ -114,6 +114,7 @@ class SalonProfile(BaseModel):
     workingHoursJson: List[dict] = []
     timezone: str = "Asia/Kolkata"
     slotDurationMins: int = 30
+    totalSeats: int = 1  # Number of parallel appointments (staff/chairs) available
 
 class ServiceCategory(BaseModel):
     model_config = ConfigDict(extra="ignore")
