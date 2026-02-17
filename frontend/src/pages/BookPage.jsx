@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { MessageCircle, Phone, MapPin, Clock, Calendar, User, Sparkles, Check, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle, Phone, MapPin, Clock, Calendar, User, Sparkles, Check, X, ChevronLeft, ChevronRight, ArrowLeft, Plus, Minus } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { format, addDays } from "date-fns";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -23,13 +24,13 @@ export default function BookPage() {
   const [features, setFeatures] = useState({ booking_calendar_enabled: false });
   const [loading, setLoading] = useState(true);
   
-  // Booking calendar state
-  const [selectedService, setSelectedService] = useState(null);
+  // Booking calendar state - now supports multiple services
+  const [selectedServices, setSelectedServices] = useState([]);
   const [selectedDate, setSelectedDate] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loadingSlots, setLoadingSlots] = useState(false);
-  const [bookingStep, setBookingStep] = useState(1); // 1: select service, 2: select slot, 3: enter details
+  const [bookingStep, setBookingStep] = useState(1); // 1: select services, 2: select slot, 3: enter details
   
   // Form data for WhatsApp fallback
   const [formData, setFormData] = useState({
