@@ -42,10 +42,12 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
   - When disabled: WhatsApp-only booking flow
   - When enabled: Full calendar booking system
 - ✅ Client Booking Flow (when calendar enabled)
-  - Step 1: Select service
+  - Step 1: Select multiple services (with add/remove)
   - Step 2: Select date and available time slot
   - Step 3: Enter client details
-  - Automatic availability checking
+  - Back buttons for navigation between steps
+  - Automatic availability checking based on total duration
+  - Summary showing selected services, total price, and duration
   - WhatsApp confirmation after booking
 - ✅ Booking Management (Salon Dashboard)
   - Confirm, Cancel, Complete, No-Show actions
