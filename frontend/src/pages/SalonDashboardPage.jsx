@@ -768,7 +768,54 @@ export default function SalonDashboardPage() {
           border-top-color: transparent !important;
           border-bottom-color: transparent !important;
         }
+        .booking-tooltip {
+          position: fixed;
+          z-index: 9999;
+          pointer-events: none;
+          transform: translate(-50%, -100%);
+        }
       `}</style>
+
+      {/* Hover Tooltip */}
+      {tooltip.visible && tooltip.booking && (
+        <div
+          ref={tooltipRef}
+          className="booking-tooltip"
+          style={{ left: tooltip.x, top: tooltip.y }}
+        >
+          <div className="bg-white rounded-xl shadow-xl border border-[#E6D5D0] p-4 min-w-[250px] max-w-[300px]">
+            <div className="flex items-center justify-between mb-3">
+              <Badge className={`${STATUS_COLORS[tooltip.booking.status]?.bg} ${STATUS_COLORS[tooltip.booking.status]?.text} border-0 capitalize text-xs`}>
+                {tooltip.booking.status?.replace("_", " ")}
+              </Badge>
+              <span className="text-xs text-[#8C7B75]">
+                {format(parseISO(tooltip.booking.startTime), "h:mm a")} - {format(parseISO(tooltip.booking.endTime), "h:mm a")}
+              </span>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <User className="w-4 h-4 text-[#D69E8E]" />
+                <span className="font-medium text-[#4A403A]">{tooltip.booking.clientName}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="w-4 h-4 text-[#D69E8E]" />
+                <span className="text-sm text-[#8C7B75]">{tooltip.booking.clientPhone}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#D69E8E]" />
+                <span className="text-sm text-[#8C7B75]">{tooltip.booking.serviceName || getServiceName(tooltip.booking.serviceId)}</span>
+              </div>
+              {tooltip.booking.notes && (
+                <div className="flex items-start gap-2 pt-2 border-t border-[#E6D5D0]">
+                  <FileText className="w-4 h-4 text-[#D69E8E] mt-0.5" />
+                  <span className="text-xs text-[#8C7B75]">{tooltip.booking.notes}</span>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-[#8C7B75] mt-3 text-center">Click for more options</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
