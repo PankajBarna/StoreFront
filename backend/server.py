@@ -115,6 +115,16 @@ class SalonProfile(BaseModel):
     timezone: str = "Asia/Kolkata"
     slotDurationMins: int = 30
     totalSeats: int = 1  # Number of parallel appointments (staff/chairs) available
+    # Dynamic section content - for template reusability
+    servicesHeading: str = "Popular Treatments"
+    servicesSubheading: str = "Discover our most loved services, crafted for your beauty needs"
+    testimonialsHeading: str = "Client Love"
+    testimonialsSubheading: str = "Testimonials"
+    ctaSectionHeading: str = "Book Your Experience"
+    ctaSectionSubheading: str = "Ready?"
+    exploreServicesText: str = "Explore Services"
+    viewAllServicesText: str = "View All Services"
+    currency: str = "₹"  # Currency symbol for prices
 
 class ServiceCategory(BaseModel):
     model_config = ConfigDict(extra="ignore")
