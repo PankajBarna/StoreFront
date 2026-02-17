@@ -264,8 +264,17 @@ Please confirm availability. Thank you!`;
     const whatsappUrl = `https://wa.me/${salon.whatsappNumber}?text=${encodedMessage}`;
     
     toast.success("Opening WhatsApp...");
-    window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
-    navigate("/");
+    
+    // Check if mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    if (isMobile) {
+      // On mobile, direct navigation works better
+      window.location.href = whatsappUrl;
+    } else {
+      // On desktop, open in new tab
+      window.open(whatsappUrl, '_blank', 'noopener,noreferrer');
+      navigate("/");
+    }
   };
 
   if (loading) {
