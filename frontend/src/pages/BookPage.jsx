@@ -245,7 +245,7 @@ export default function BookPage() {
     }
 
     const servicesText = formData.selectedServices
-      .map(s => `• ${s.name} (₹${s.priceStartingAt}+, ${s.durationMins} mins)`)
+      .map(s => `• ${s.name} (${currency}${s.priceStartingAt}+, ${s.durationMins} mins)`)
       .join("\n");
     
     const message = `Hi! I'd like to book an appointment at ${salon.name}.
@@ -255,7 +255,7 @@ export default function BookPage() {
 *Services:*
 ${servicesText}
 
-*Estimated Total:* ₹${whatsappTotalPrice}+ (${whatsappTotalDuration} mins)
+*Estimated Total:* ${currency}${whatsappTotalPrice}+ (${whatsappTotalDuration} mins)
 
 *Preferred Date:* ${formData.date ? format(formData.date, "dd MMM yyyy") : "Flexible"}
 *Preferred Time:* ${formData.time || "Flexible"}
@@ -367,7 +367,7 @@ Please confirm availability. Thank you!`;
                                 <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
                               </div>
                             </div>
-                            <p className="font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</p>
+                            <p className="font-semibold text-[#9D5C63]">{`${currency}`}{service.priceStartingAt}+</p>
                           </button>
                         );
                       })}
@@ -697,7 +697,7 @@ Please confirm availability. Thank you!`;
                               <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
                             </div>
                           </div>
-                          <p className="font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</p>
+                          <p className="font-semibold text-[#9D5C63]">{`${currency}`}{service.priceStartingAt}+</p>
                         </div>
                       ))}
                     </div>
@@ -725,7 +725,7 @@ Please confirm availability. Thank you!`;
                             <p className="text-sm font-medium text-[#4A403A]">{service.name}</p>
                             <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
                           </div>
-                          <span className="text-sm font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</span>
+                          <span className="text-sm font-semibold text-[#9D5C63]">{`${currency}`}{service.priceStartingAt}+</span>
                         </div>
                       ))}
                     </div>
@@ -736,7 +736,7 @@ Please confirm availability. Thank you!`;
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#8C7B75]">Estimated Total</span>
-                        <span className="text-lg font-bold text-[#9D5C63]">₹{whatsappTotalPrice}+</span>
+                        <span className="text-lg font-bold text-[#9D5C63]">{`${currency}`}{whatsappTotalPrice}+</span>
                       </div>
                     </div>
                   </>
