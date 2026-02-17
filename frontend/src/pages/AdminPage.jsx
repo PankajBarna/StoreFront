@@ -38,6 +38,8 @@ export default function AdminPage() {
   const [gallery, setGallery] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [offers, setOffers] = useState([]);
+  const [features, setFeatures] = useState({ booking_calendar_enabled: false });
+  const [savingFeatures, setSavingFeatures] = useState(false);
   
   // Dialog states
   const [editDialog, setEditDialog] = useState({ open: false, type: "", data: null });
