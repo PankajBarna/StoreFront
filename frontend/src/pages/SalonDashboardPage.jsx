@@ -275,6 +275,22 @@ export default function SalonDashboardPage() {
     return service?.name || "Unknown Service";
   };
 
+  // Hover handlers for tooltips
+  const handleEventMouseEnter = (info) => {
+    const booking = info.event.extendedProps.booking;
+    const rect = info.el.getBoundingClientRect();
+    setTooltip({
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 10,
+      booking
+    });
+  };
+
+  const handleEventMouseLeave = () => {
+    setTooltip({ visible: false, x: 0, y: 0, booking: null });
+  };
+
   // Convert bookings to calendar events
   const calendarEvents = bookings.map(booking => ({
     id: booking.id,
