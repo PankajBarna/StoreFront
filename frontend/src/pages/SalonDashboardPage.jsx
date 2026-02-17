@@ -421,6 +421,8 @@ export default function SalonDashboardPage() {
                     events={calendarEvents}
                     eventClick={handleEventClick}
                     eventDrop={handleEventDrop}
+                    eventMouseEnter={handleEventMouseEnter}
+                    eventMouseLeave={handleEventMouseLeave}
                     editable={true}
                     droppable={true}
                     datesSet={handleDateRangeChange}
@@ -440,6 +442,8 @@ export default function SalonDashboardPage() {
                     }}
                     nowIndicator={true}
                     allDaySlot={false}
+                    slotEventOverlap={false}
+                    eventMaxStack={3}
                     businessHours={{
                       daysOfWeek: [1, 2, 3, 4, 5, 6, 0],
                       startTime: salon?.workingHoursJson?.[0]?.open || "10:00",
