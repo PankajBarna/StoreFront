@@ -535,10 +535,10 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str, tot
     return slots
 
 async def check_slot_available(salon_id: str, start_time: str, end_time: str, exclude_booking_id: str = None) -> bool:
-    """Check if a time slot is available (considers totalSeats for parallel bookings)"""
-    # Get salon to check total seats
-    salon = await db.salon_profile.find_one({}, {"_id": 0})
-    total_seats = salon.get("totalSeats", 1) if salon else 1
+    """Check if a time slot is available (considers active staff count for parallel bookings)"""
+    # Get active staff count for parallel slots
+    active_staff_count = await db.staff.count_documents({"active": True})
+    total_seats = max(active_staff_count, 1)  # At least 1 slot even if no staff
     
     query = {
         "salonId": salon_id,
@@ -554,7 +554,7 @@ async def check_slot_available(salon_id: str, start_time: str, end_time: str, ex
     # Count overlapping bookings
     overlapping_count = await db.bookings.count_documents(query)
     
-    # Available if overlapping bookings are less than total seats
+    # Available if overlapping bookings are less than total seats (active staff)
     return overlapping_count < total_seats
 
 async def generate_whatsapp_notification(booking: dict, notification_type: str, salon: dict = None, new_time: str = None) -> str:
