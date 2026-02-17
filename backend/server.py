@@ -1425,6 +1425,15 @@ async def seed_database():
     )
     await db.admins.insert_one(salon_admin.model_dump())
     
+    # Create Sample Staff
+    staff_members = [
+        Staff(id="staff-1", name="Priya Sharma", phone="9876543201", role="senior_stylist", specializations=["haircut", "coloring", "styling"]),
+        Staff(id="staff-2", name="Neha Patel", phone="9876543202", role="therapist", specializations=["facial", "cleanup", "massage"]),
+        Staff(id="staff-3", name="Anjali Singh", phone="9876543203", role="stylist", specializations=["haircut", "manicure", "pedicure"]),
+    ]
+    for staff in staff_members:
+        await db.staff.insert_one(staff.model_dump())
+    
     return {
         "message": "Database seeded successfully",
         "seeded": True,
