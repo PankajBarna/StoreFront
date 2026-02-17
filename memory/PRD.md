@@ -37,8 +37,8 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
   - List view with search functionality
   - Color-coded booking statuses
   - Stats overview (Today, Pending, Confirmed, Completed)
-- ✅ Platform Admin Features (`/admin/features`)
-  - Global booking_calendar_enabled toggle
+- ✅ Admin Settings (`/admin` -> Settings tab)
+  - Booking calendar enable/disable toggle
   - When disabled: WhatsApp-only booking flow
   - When enabled: Full calendar booking system
 - ✅ Client Booking Flow (when calendar enabled)
@@ -47,16 +47,15 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
   - Step 3: Enter client details
   - Automatic availability checking
   - WhatsApp confirmation after booking
-- ✅ Booking Management
+- ✅ Booking Management (Salon Dashboard)
   - Confirm, Cancel, Complete, No-Show actions
   - Reschedule with conflict detection
   - Drag-and-drop rescheduling in calendar
   - Audit log for booking changes
 - ✅ Role-Based Access Control
-  - platform_admin: Can toggle features
-  - salon_owner: Can manage bookings
-  - salon_admin: Can manage bookings
-  - client: Can create bookings (public)
+  - Admin (salon_owner): Controls features + manages content
+  - Salon staff (salon_owner): Can only manage bookings
+  - Client: Can create bookings (public)
 
 ## Tech Stack
 - Frontend: React 19, TailwindCSS, Shadcn/UI, FullCalendar
