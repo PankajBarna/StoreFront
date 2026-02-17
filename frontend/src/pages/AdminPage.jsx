@@ -781,6 +781,121 @@ export default function AdminPage() {
               </div>
             </div>
           )}
+
+          {/* Settings Tab */}
+          {activeTab === "settings" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold text-[#4A403A]">Settings</h2>
+              </div>
+
+              {/* Booking Calendar Feature */}
+              <Card className="border-[#E6D5D0] rounded-2xl overflow-hidden">
+                <CardHeader className="bg-gradient-to-r from-[#FDF8F5] to-white pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-[#D69E8E]/20 flex items-center justify-center">
+                        <Calendar className="w-5 h-5 text-[#D69E8E]" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-lg text-[#4A403A]">Booking Calendar</CardTitle>
+                        <CardDescription>Enable online appointment booking for clients</CardDescription>
+                      </div>
+                    </div>
+                    <Badge className={features.booking_calendar_enabled 
+                      ? "bg-emerald-100 text-emerald-800 border-0" 
+                      : "bg-gray-100 text-gray-600 border-0"
+                    }>
+                      {features.booking_calendar_enabled ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-6">
+                  {/* Toggle Switch */}
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-[#FDF8F5]">
+                    <div className="flex items-center gap-4">
+                      {features.booking_calendar_enabled ? (
+                        <ToggleRight className="w-8 h-8 text-emerald-500" />
+                      ) : (
+                        <ToggleLeft className="w-8 h-8 text-gray-400" />
+                      )}
+                      <div>
+                        <Label htmlFor="booking-toggle" className="text-base font-medium text-[#4A403A]">
+                          {features.booking_calendar_enabled ? "Calendar is Active" : "Calendar is Inactive"}
+                        </Label>
+                        <p className="text-sm text-[#8C7B75]">
+                          {features.booking_calendar_enabled 
+                            ? "Clients can book appointments with specific time slots" 
+                            : "Clients use WhatsApp for booking requests"}
+                        </p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="booking-toggle"
+                      checked={features.booking_calendar_enabled}
+                      onCheckedChange={handleToggleBookingCalendar}
+                      disabled={savingFeatures}
+                      data-testid="booking-calendar-toggle"
+                    />
+                  </div>
+
+                  {/* Feature Description */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-100">
+                      <h4 className="font-medium text-emerald-800 mb-2 flex items-center gap-2">
+                        <CheckCircle className="w-4 h-4" />
+                        When Enabled
+                      </h4>
+                      <ul className="text-sm text-emerald-700 space-y-1.5">
+                        <li>• Clients see available time slots</li>
+                        <li>• Online booking with instant confirmation</li>
+                        <li>• Salon can manage bookings in dashboard</li>
+                        <li>• Automatic conflict detection</li>
+                      </ul>
+                    </div>
+                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100">
+                      <h4 className="font-medium text-gray-700 mb-2 flex items-center gap-2">
+                        <AlertTriangle className="w-4 h-4" />
+                        When Disabled
+                      </h4>
+                      <ul className="text-sm text-gray-600 space-y-1.5">
+                        <li>• "Book via WhatsApp" button shown</li>
+                        <li>• No availability checking</li>
+                        <li>• Manual booking management</li>
+                        <li>• Simpler for smaller salons</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  {/* Salon Dashboard Link */}
+                  {features.booking_calendar_enabled && (
+                    <Alert className="bg-blue-50 border-blue-200">
+                      <Calendar className="h-4 w-4 text-blue-600" />
+                      <AlertTitle className="text-blue-800">Manage Bookings</AlertTitle>
+                      <AlertDescription className="text-blue-700">
+                        Salon staff can view and manage bookings at{" "}
+                        <a href="/salon/login" className="underline font-medium" target="_blank">
+                          /salon/login
+                        </a>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Metadata */}
+              {features.updated_at && (
+                <Card className="border-[#E6D5D0] rounded-2xl">
+                  <CardContent className="py-4">
+                    <div className="flex items-center justify-between text-sm text-[#8C7B75]">
+                      <span>Last updated: {new Date(features.updated_at).toLocaleString()}</span>
+                      {features.updated_by && <span>By: {features.updated_by}</span>}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
         </main>
       </div>
 
