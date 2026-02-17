@@ -1382,7 +1382,17 @@ async def seed_database():
         metaDescription="Premium beauty services in Dombivli.",
         workingHoursJson=default_working_hours,
         timezone="Asia/Kolkata",
-        slotDurationMins=30
+        slotDurationMins=30,
+        # Dynamic section content
+        servicesHeading="Popular Treatments",
+        servicesSubheading="Discover our most loved services, crafted for your beauty needs",
+        testimonialsHeading="Client Love",
+        testimonialsSubheading="Testimonials",
+        ctaSectionHeading="Book Your Experience",
+        ctaSectionSubheading="Ready?",
+        exploreServicesText="Explore Services",
+        viewAllServicesText="View All Services",
+        currency="₹"
     )
     await db.salon_profile.insert_one(salon.model_dump())
     
