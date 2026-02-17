@@ -1080,7 +1080,20 @@ async def update_booking_status(
     await db.booking_changes.insert_one(change.model_dump())
     
     updated_booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
-    return updated_booking
+    
+    # Get service name for notification
+    service = await db.services.find_one({"id": updated_booking.get("serviceId")}, {"_id": 0})
+    if service:
+        updated_booking["serviceName"] = service.get("name")
+    
+    # Generate WhatsApp notification URL for confirmed or cancelled status
+    whatsapp_url = None
+    if data.status == BookingStatus.CONFIRMED:
+        whatsapp_url = await generate_whatsapp_notification(updated_booking, "confirmed")
+    elif data.status == BookingStatus.CANCELLED:
+        whatsapp_url = await generate_whatsapp_notification(updated_booking, "cancelled")
+    
+    return {**updated_booking, "whatsappNotificationUrl": whatsapp_url}
 
 @salon_router.patch("/bookings/{booking_id}/reschedule")
 async def reschedule_booking(
