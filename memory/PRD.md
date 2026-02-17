@@ -97,8 +97,11 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - `services`: id, categoryId, name, price, duration, depositRequired
 
 ### Bookings
-- `bookings`: id, salonId, serviceId, clientName, clientPhone, startTime, endTime, status
+- `bookings`: id, salonId, serviceId, staffId, clientName, clientPhone, startTime, endTime, status
 - `booking_changes`: Audit log for all booking modifications
+
+### Staff
+- `staff`: id, name, phone, email, role, specializations, avatarUrl, active, createdAt
 
 ### Features
 - `feature_flags`: id=global_features, booking_calendar_enabled
