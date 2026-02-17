@@ -708,6 +708,127 @@ export default function AdminPage() {
             </div>
           )}
 
+          {/* Staff Tab */}
+          {activeTab === "staff" && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-semibold text-[#4A403A]">Staff Management</h2>
+                <Button
+                  onClick={() => setEditDialog({ open: true, type: "staff", data: null })}
+                  className="bg-[#D69E8E] hover:bg-[#C0806E] rounded-full"
+                  data-testid="add-staff-btn"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Staff
+                </Button>
+              </div>
+              
+              <Card className="border-[#E6D5D0] rounded-2xl">
+                <CardHeader className="pb-2">
+                  <CardDescription>
+                    Manage your salon staff. Staff members can be assigned to bookings by the salon manager.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {staff.length === 0 ? (
+                    <div className="text-center py-8 text-[#8C7B75]">
+                      <Users className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                      <p>No staff members added yet</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {staff.map((member) => (
+                        <Card 
+                          key={member.id} 
+                          className={`border-[#E6D5D0] rounded-xl ${!member.active ? 'opacity-60 bg-gray-50' : ''}`}
+                          data-testid={`staff-card-${member.id}`}
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-full bg-[#D69E8E]/20 flex items-center justify-center">
+                                  {member.avatarUrl ? (
+                                    <img src={member.avatarUrl} alt={member.name} className="w-12 h-12 rounded-full object-cover" />
+                                  ) : (
+                                    <Users className="w-6 h-6 text-[#D69E8E]" />
+                                  )}
+                                </div>
+                                <div>
+                                  <h3 className="font-medium text-[#4A403A]">{member.name}</h3>
+                                  <Badge className={`text-xs ${member.active ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-600'} border-0`}>
+                                    {member.active ? 'Active' : 'Inactive'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm mb-4">
+                              <p className="text-[#8C7B75] capitalize">
+                                <span className="font-medium text-[#4A403A]">Role:</span> {member.role?.replace('_', ' ') || 'Stylist'}
+                              </p>
+                              {member.phone && (
+                                <p className="text-[#8C7B75] flex items-center gap-2">
+                                  <Phone className="w-3 h-3" />
+                                  {member.phone}
+                                </p>
+                              )}
+                              {member.email && (
+                                <p className="text-[#8C7B75] flex items-center gap-2">
+                                  <Mail className="w-3 h-3" />
+                                  {member.email}
+                                </p>
+                              )}
+                              {member.specializations?.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {member.specializations.map((spec, i) => (
+                                    <Badge key={i} variant="outline" className="text-xs border-[#E6D5D0] text-[#8C7B75]">
+                                      {spec}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditDialog({ open: true, type: "staff", data: member })}
+                                className="flex-1 rounded-lg border-[#E6D5D0]"
+                                data-testid={`edit-staff-${member.id}`}
+                              >
+                                <Edit className="w-4 h-4 mr-1" />
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleToggleStaff(member.id, member.active)}
+                                className={`rounded-lg ${member.active ? 'border-amber-200 text-amber-600' : 'border-emerald-200 text-emerald-600'}`}
+                                data-testid={`toggle-staff-${member.id}`}
+                              >
+                                {member.active ? 'Deactivate' : 'Activate'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteStaff(member.id)}
+                                className="rounded-lg border-red-200 text-red-500"
+                                data-testid={`delete-staff-${member.id}`}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
           {/* Reviews Tab */}
           {activeTab === "reviews" && (
             <div className="space-y-6">
