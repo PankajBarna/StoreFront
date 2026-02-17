@@ -878,6 +878,40 @@ async def patch_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(ge
     profile = await db.salon_profile.find_one({}, {"_id": 0})
     return profile
 
+# Staff CRUD
+@api_router.get("/staff")
+async def get_staff(active_only: bool = True):
+    """Get all staff members"""
+    query = {"active": True} if active_only else {}
+    staff = await db.staff.find(query, {"_id": 0}).to_list(100)
+    return staff
+
+@api_router.post("/admin/staff")
+async def create_staff(data: StaffCreate, admin: dict = Depends(get_salon_admin)):
+    """Create a new staff member"""
+    staff = Staff(**data.model_dump())
+    await db.staff.insert_one(staff.model_dump())
+    return staff
+
+@api_router.put("/admin/staff/{staff_id}")
+async def update_staff(staff_id: str, data: StaffUpdate, admin: dict = Depends(get_salon_admin)):
+    """Update a staff member"""
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if update_data:
+        await db.staff.update_one({"id": staff_id}, {"$set": update_data})
+    staff = await db.staff.find_one({"id": staff_id}, {"_id": 0})
+    if not staff:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    return staff
+
+@api_router.delete("/admin/staff/{staff_id}")
+async def delete_staff(staff_id: str, admin: dict = Depends(get_salon_admin)):
+    """Delete a staff member"""
+    result = await db.staff.delete_one({"id": staff_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Staff not found")
+    return {"message": "Staff deleted"}
+
 # Categories CRUD
 @api_router.post("/admin/categories")
 async def create_category(data: ServiceCategoryCreate, admin: dict = Depends(get_salon_admin)):
