@@ -80,10 +80,29 @@ export default function BookPage() {
   }, [salon]);
 
   useEffect(() => {
-    if (selectedService && selectedDate && features.booking_calendar_enabled) {
+    if (selectedServices.length > 0 && selectedDate && features.booking_calendar_enabled) {
       fetchAvailableSlots();
     }
-  }, [selectedService, selectedDate]);
+  }, [selectedServices, selectedDate, features]);
+
+  // Calculate totals for selected services
+  const totalPrice = selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
+  const totalDuration = selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
+
+  // Toggle service selection for calendar mode
+  const toggleCalendarService = (service) => {
+    setSelectedServices(prev => {
+      const exists = prev.find(s => s.id === service.id);
+      if (exists) {
+        return prev.filter(s => s.id !== service.id);
+      } else {
+        return [...prev, service];
+      }
+    });
+    // Reset date/slot when services change
+    setSelectedSlot(null);
+    setAvailableSlots([]);
+  };
 
   const generateCalendarDates = () => {
     const dates = [];
@@ -124,7 +143,7 @@ export default function BookPage() {
   };
 
   const fetchAvailableSlots = async () => {
-    if (!selectedService || !selectedDate) return;
+    if (selectedServices.length === 0 || !selectedDate) return;
     
     setLoadingSlots(true);
     try {
