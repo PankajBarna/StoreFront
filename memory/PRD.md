@@ -59,6 +59,23 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
   - Salon staff (salon_owner): Can only manage bookings
   - Client: Can create bookings (public)
 
+### Phase 3: Staff Management (Completed - Dec 2025)
+- ✅ Staff data model with CRUD APIs
+  - Staff fields: id, name, phone, email, role, specializations, active
+  - Pre-seeded 3 staff members: Priya Sharma, Neha Patel, Anjali Singh
+- ✅ Staff assignment to bookings
+  - Assign staff when confirming pending booking
+  - Update staff on already confirmed bookings
+  - "Update Staff Assignment" button for confirmed bookings
+- ✅ Staff display across dashboard
+  - Staff dropdown in booking detail dialog
+  - Staff name shown in booking list view
+  - Staff info in calendar tooltip on hover
+- ✅ Backend support
+  - GET /api/staff - List staff members
+  - Staff enrichment in booking lists (staffName field)
+  - Booking change audit includes staff changes
+
 ## Tech Stack
 - Frontend: React 19, TailwindCSS, Shadcn/UI, FullCalendar
 - Backend: FastAPI, Motor (async MongoDB)
