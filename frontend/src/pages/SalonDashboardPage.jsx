@@ -224,9 +224,20 @@ export default function SalonDashboardPage() {
       });
       
       if (res.ok) {
+        const data = await res.json();
         toast.success(`Booking ${status}`);
         fetchBookings(currentDateRange.start, currentDateRange.end);
         setBookingDetailOpen(false);
+        
+        // Open WhatsApp notification if available (for confirmed or cancelled)
+        if (data.whatsappNotificationUrl && (status === "confirmed" || status === "cancelled")) {
+          const shouldNotify = window.confirm(
+            `Would you like to notify the client via WhatsApp about the ${status} booking?`
+          );
+          if (shouldNotify) {
+            window.open(data.whatsappNotificationUrl, '_blank', 'noopener,noreferrer');
+          }
+        }
       } else {
         const error = await res.json();
         toast.error(error.detail || "Failed to update booking");
