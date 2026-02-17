@@ -550,6 +550,11 @@ export default function SalonDashboardPage() {
                             <p className="text-sm text-[#8C7B75]">
                               {booking.serviceName || getServiceName(booking.serviceId)}
                             </p>
+                            {booking.staffName && (
+                              <p className="text-xs text-[#9D5C63] font-medium mt-0.5">
+                                Staff: {booking.staffName}
+                              </p>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
