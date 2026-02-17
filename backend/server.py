@@ -243,6 +243,7 @@ class SalonProfileUpdate(BaseModel):
     workingHoursJson: Optional[List[dict]] = None
     timezone: Optional[str] = None
     slotDurationMins: Optional[int] = None
+    totalSeats: Optional[int] = None
 
 class ServiceCategoryCreate(BaseModel):
     name: str
