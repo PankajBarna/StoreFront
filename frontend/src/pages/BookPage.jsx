@@ -165,7 +165,7 @@ export default function BookPage() {
   };
 
   const handleCreateBooking = async () => {
-    if (!selectedService || !selectedSlot || !formData.name || !formData.phone) {
+    if (selectedServices.length === 0 || !selectedSlot || !formData.name || !formData.phone) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -175,11 +175,13 @@ export default function BookPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          serviceId: selectedService.id,
+          serviceIds: selectedServices.map(s => s.id),
+          serviceId: selectedServices[0].id, // Primary service for backward compatibility
           clientName: formData.name,
           clientPhone: formData.phone,
           startTime: selectedSlot.startTime,
-          notes: formData.notes
+          notes: formData.notes,
+          totalDuration: totalDuration
         })
       });
 
