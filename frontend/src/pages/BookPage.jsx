@@ -542,7 +542,7 @@ Please confirm availability. Thank you!`;
                   <div className="space-y-1 mb-3">
                     {selectedServices.map(service => (
                       <p key={service.id} className="text-sm text-[#8C7B75]">
-                        • {service.name} (₹{service.priceStartingAt}+, {service.durationMins} mins)
+                        • {service.name} ({currency}{service.priceStartingAt}+, {service.durationMins} mins)
                       </p>
                     ))}
                   </div>
@@ -551,7 +551,7 @@ Please confirm availability. Thank you!`;
                       {format(new Date(selectedSlot.startTime), "EEEE, d MMMM yyyy")} at {selectedSlot.display}
                     </p>
                     <p className="text-sm font-semibold text-[#9D5C63] mt-1">
-                      Total: ₹{totalPrice}+ • {totalDuration} mins
+                      Total: {currency}{totalPrice}+ • {totalDuration} mins
                     </p>
                   </div>
                 </div>
