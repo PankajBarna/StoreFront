@@ -417,6 +417,7 @@ export default function AdminPage() {
     { id: "gallery", label: "Gallery", icon: Image },
     { id: "reviews", label: "Reviews", icon: Star },
     { id: "offers", label: "Offers", icon: Gift },
+    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   return (
