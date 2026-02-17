@@ -1126,12 +1126,17 @@ async def update_booking_status(
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
     old_status = booking.get("status")
+    old_staff_id = booking.get("staffId")
     
-    # Update booking
-    await db.bookings.update_one(
-        {"id": booking_id},
-        {"$set": {"status": data.status, "updatedAt": datetime.now(timezone.utc).isoformat()}}
-    )
+    # Update booking - include staffId if provided
+    update_data = {
+        "status": data.status, 
+        "updatedAt": datetime.now(timezone.utc).isoformat()
+    }
+    if data.staffId:
+        update_data["staffId"] = data.staffId
+    
+    await db.bookings.update_one({"id": booking_id}, {"$set": update_data})
     
     # Log change
     change = BookingChange(
@@ -1140,7 +1145,9 @@ async def update_booking_status(
         changedByUserId=admin["id"],
         oldStatus=old_status,
         newStatus=data.status,
-        reason=f"Status changed from {old_status} to {data.status}"
+        oldStaffId=old_staff_id,
+        newStaffId=data.staffId,
+        reason=f"Status changed from {old_status} to {data.status}" + (f", assigned to staff {data.staffId}" if data.staffId else "")
     )
     await db.booking_changes.insert_one(change.model_dump())
     
@@ -1150,6 +1157,12 @@ async def update_booking_status(
     service = await db.services.find_one({"id": updated_booking.get("serviceId")}, {"_id": 0})
     if service:
         updated_booking["serviceName"] = service.get("name")
+    
+    # Get staff name if assigned
+    if updated_booking.get("staffId"):
+        staff = await db.staff.find_one({"id": updated_booking.get("staffId")}, {"_id": 0})
+        if staff:
+            updated_booking["staffName"] = staff.get("name")
     
     # Generate WhatsApp notification URL for confirmed or cancelled status
     whatsapp_url = None
