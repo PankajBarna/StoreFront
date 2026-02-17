@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { 
   LogIn, LogOut, Eye, EyeOff, Plus, Edit, Trash2, ToggleLeft, ToggleRight,
   Sparkles, Menu, X, Home, Scissors, Image, Star, Gift, Settings, Search,
-  Calendar, CheckCircle, AlertTriangle
+  Calendar, CheckCircle, AlertTriangle, Users, Phone, Mail
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
