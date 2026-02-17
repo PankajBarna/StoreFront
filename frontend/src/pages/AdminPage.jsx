@@ -120,13 +120,14 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      const [salonRes, catRes, svcRes, galRes, revRes, offRes] = await Promise.all([
+      const [salonRes, catRes, svcRes, galRes, revRes, offRes, featuresRes] = await Promise.all([
         fetch(`${API}/salon`),
         fetch(`${API}/categories`),
         fetch(`${API}/services?active_only=false`),
         fetch(`${API}/gallery`),
         fetch(`${API}/reviews`),
-        fetch(`${API}/offers?active_only=false`)
+        fetch(`${API}/offers?active_only=false`),
+        fetch(`${API}/admin/features`, { headers })
       ]);
       
       if (salonRes.ok) setSalon(await salonRes.json());
@@ -135,8 +136,36 @@ export default function AdminPage() {
       if (galRes.ok) setGallery(await galRes.json());
       if (revRes.ok) setReviews(await revRes.json());
       if (offRes.ok) setOffers(await offRes.json());
+      if (featuresRes.ok) setFeatures(await featuresRes.json());
     } catch (e) {
       console.error("Error fetching data:", e);
+    }
+  };
+
+  const handleToggleBookingCalendar = async (enabled) => {
+    setSavingFeatures(true);
+    try {
+      const res = await fetch(`${API}/admin/features`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ booking_calendar_enabled: enabled })
+      });
+      
+      if (res.ok) {
+        const updatedFeatures = await res.json();
+        setFeatures(updatedFeatures);
+        toast.success(`Booking calendar ${enabled ? "enabled" : "disabled"}`);
+      } else {
+        const error = await res.json();
+        toast.error(error.detail || "Failed to update setting");
+      }
+    } catch (e) {
+      toast.error("Error updating setting");
+    } finally {
+      setSavingFeatures(false);
     }
   };
 
