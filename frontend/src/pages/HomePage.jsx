@@ -196,7 +196,7 @@ export default function HomePage() {
                         {service.name}
                       </h3>
                       <span className="text-xl font-bold text-[#D69E8E] whitespace-nowrap">
-                        ₹{service.priceStartingAt}
+                        {salon?.currency || "₹"}{service.priceStartingAt}
                       </span>
                     </div>
                     
