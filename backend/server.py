@@ -389,7 +389,7 @@ async def get_working_hours_for_date(salon: dict, date: datetime) -> tuple:
     # Default working hours
     return "10:00", "20:00"
 
-async def get_available_slots(salon_id: str, service_id: str, date_str: str) -> List[dict]:
+async def get_available_slots(salon_id: str, service_id: str, date_str: str, total_duration: int = None) -> List[dict]:
     """Calculate available time slots for a given date and service"""
     salon = await db.salon_profile.find_one({}, {"_id": 0})
     if not salon:
@@ -399,7 +399,8 @@ async def get_available_slots(salon_id: str, service_id: str, date_str: str) -> 
     if not service:
         return []
     
-    duration = service.get("durationMins", 30)
+    # Use total_duration if provided (for multiple services), otherwise use service duration
+    duration = total_duration if total_duration else service.get("durationMins", 30)
     slot_duration = salon.get("slotDurationMins", 30)
     
     # Parse the date
