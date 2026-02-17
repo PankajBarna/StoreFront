@@ -334,10 +334,10 @@ export default function HomePage() {
       <section className="py-20 md:py-28 bg-[#FDF8F5]">
         <div className="max-w-4xl mx-auto px-6 lg:px-8 text-center">
           <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
-            Ready?
+            {salon?.ctaSectionSubheading || "Ready?"}
           </span>
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-6">
-            Book Your Experience
+            {salon?.ctaSectionHeading || "Book Your Experience"}
           </h2>
           <p className="text-[#6B5B54] text-lg mb-10 max-w-2xl mx-auto leading-relaxed">
             {salon?.aboutText || "Experience the best in beauty care. Our expert team is ready to pamper you."}
