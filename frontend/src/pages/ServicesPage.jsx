@@ -8,25 +8,33 @@ const API = `${BACKEND_URL}/api`;
 
 export default function ServicesPage() {
   const [groupedServices, setGroupedServices] = useState([]);
+  const [salon, setSalon] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchServices();
+    fetchData();
   }, []);
 
-  const fetchServices = async () => {
+  const fetchData = async () => {
     try {
-      const res = await fetch(`${API}/services/grouped`);
-      if (res.ok) {
-        const data = await res.json();
-        setGroupedServices(data);
+      const [servicesRes, salonRes] = await Promise.all([
+        fetch(`${API}/services/grouped`),
+        fetch(`${API}/salon`)
+      ]);
+      if (servicesRes.ok) {
+        setGroupedServices(await servicesRes.json());
+      }
+      if (salonRes.ok) {
+        setSalon(await salonRes.json());
       }
     } catch (e) {
-      console.error("Error fetching services:", e);
+      console.error("Error fetching data:", e);
     } finally {
       setLoading(false);
     }
   };
+
+  const currency = salon?.currency || "₹";
 
   if (loading) {
     return (
