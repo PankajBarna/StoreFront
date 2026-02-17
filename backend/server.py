@@ -266,6 +266,16 @@ class SalonProfileUpdate(BaseModel):
     timezone: Optional[str] = None
     slotDurationMins: Optional[int] = None
     totalSeats: Optional[int] = None
+    # Dynamic section content
+    servicesHeading: Optional[str] = None
+    servicesSubheading: Optional[str] = None
+    testimonialsHeading: Optional[str] = None
+    testimonialsSubheading: Optional[str] = None
+    ctaSectionHeading: Optional[str] = None
+    ctaSectionSubheading: Optional[str] = None
+    exploreServicesText: Optional[str] = None
+    viewAllServicesText: Optional[str] = None
+    currency: Optional[str] = None
 
 class ServiceCategoryCreate(BaseModel):
     name: str
