@@ -417,6 +417,7 @@ export default function AdminPage() {
   const tabs = [
     { id: "salon", label: "Salon", icon: Home },
     { id: "services", label: "Services", icon: Scissors },
+    { id: "staff", label: "Staff", icon: Users },
     { id: "gallery", label: "Gallery", icon: Image },
     { id: "reviews", label: "Reviews", icon: Star },
     { id: "offers", label: "Offers", icon: Gift },
