@@ -267,11 +267,22 @@ export default function SalonDashboardPage() {
       });
       
       if (res.ok) {
+        const data = await res.json();
         toast.success("Booking rescheduled successfully");
         fetchBookings(currentDateRange.start, currentDateRange.end);
         setRescheduleOpen(false);
         setBookingDetailOpen(false);
         setRescheduleData({ newStartTime: "", reason: "" });
+        
+        // Open WhatsApp notification for reschedule
+        if (data.whatsappNotificationUrl) {
+          const shouldNotify = window.confirm(
+            "Would you like to notify the client via WhatsApp about the rescheduled booking?"
+          );
+          if (shouldNotify) {
+            window.open(data.whatsappNotificationUrl, '_blank', 'noopener,noreferrer');
+          }
+        }
       } else {
         const error = await res.json();
         toast.error(error.detail || "Failed to reschedule booking");
