@@ -308,13 +308,13 @@ export default function SalonDashboardPage() {
   if (!features.booking_calendar_enabled) {
     return (
       <div className="min-h-screen bg-[#FFFCFA]">
-        <DashboardHeader salon={salon} onLogout={handleLogout} userRole={userRole} />
+        <DashboardHeader salon={salon} onLogout={handleLogout} />
         <div className="max-w-2xl mx-auto px-4 py-20 text-center">
           <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8">
             <AlertCircle className="w-16 h-16 text-amber-500 mx-auto mb-4" />
             <h2 className="text-2xl font-semibold text-[#4A403A] mb-2">Booking Calendar Disabled</h2>
             <p className="text-[#8C7B75] mb-6">
-              The booking calendar feature is currently disabled by the platform administrator.
+              The booking calendar feature is currently disabled by the admin.
               Clients are using WhatsApp for booking requests.
             </p>
             <Button
@@ -332,7 +332,7 @@ export default function SalonDashboardPage() {
 
   return (
     <div className="min-h-screen bg-[#FFFCFA]" data-testid="salon-dashboard">
-      <DashboardHeader salon={salon} onLogout={handleLogout} userRole={userRole} />
+      <DashboardHeader salon={salon} onLogout={handleLogout} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Stats Overview */}
