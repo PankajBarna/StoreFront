@@ -148,7 +148,8 @@ export default function BookPage() {
     setLoadingSlots(true);
     try {
       const dateStr = format(selectedDate, "yyyy-MM-dd");
-      const res = await fetch(`${API}/public/availability?serviceId=${selectedService.id}&date=${dateStr}`);
+      // Use the first service for availability check, but consider total duration
+      const res = await fetch(`${API}/public/availability?serviceId=${selectedServices[0].id}&date=${dateStr}&totalDuration=${totalDuration}`);
       if (res.ok) {
         const data = await res.json();
         setAvailableSlots(data.slots || []);
