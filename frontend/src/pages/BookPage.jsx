@@ -57,8 +57,10 @@ export default function BookPage() {
       const matchedService = allServices.find(s => s.name === preSelectedService);
       if (matchedService) {
         if (features.booking_calendar_enabled) {
-          setSelectedService(matchedService);
-          setBookingStep(2);
+          // Add to selected services for calendar mode
+          if (!selectedServices.find(s => s.id === matchedService.id)) {
+            setSelectedServices([matchedService]);
+          }
         } else {
           if (!formData.selectedServices.find(s => s.id === matchedService.id)) {
             setFormData(prev => ({
