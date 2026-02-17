@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, status, UploadFile, File, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
 import uuid
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 import jwt
 import bcrypt
 import base64
@@ -23,17 +24,38 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
 # JWT Settings
-SECRET_KEY = os.environ.get('JWT_SECRET', 'glow-beauty-studio-secret-key-2024')
+SECRET_KEY = os.environ.get('JWT_SECRET', 'salon-booking-secret-key-2024')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 
-# Create the main app
-app = FastAPI(title="Glow Beauty Studio API")
+# Timezone
+IST = ZoneInfo("Asia/Kolkata")
 
-# Create a router with the /api prefix
+# Create the main app
+app = FastAPI(title="Salon Booking System API")
+
+# Create routers
 api_router = APIRouter(prefix="/api")
+admin_router = APIRouter(prefix="/api/admin")
+salon_router = APIRouter(prefix="/api/salon")
+public_router = APIRouter(prefix="/api/public")
 
 security = HTTPBearer()
+
+# ============== ENUMS ==============
+
+class BookingStatus:
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    COMPLETED = "completed"
+    NO_SHOW = "no_show"
+
+class UserRole:
+    PLATFORM_ADMIN = "platform_admin"
+    SALON_OWNER = "salon_owner"
+    SALON_ADMIN = "salon_admin"
+    CLIENT = "client"
 
 # ============== MODELS ==============
 
@@ -47,50 +69,50 @@ class FAQ(BaseModel):
 
 class Policy(BaseModel):
     title: str
-    icon: str  # icon name: clock, alert, credit-card, shield
+    icon: str
     points: List[str]
+
+class WorkingHours(BaseModel):
+    day: str  # monday, tuesday, etc.
+    open: str  # "09:00"
+    close: str  # "20:00"
+    closed: bool = False
 
 class SalonProfile(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    # Basic Info
     name: str
-    brandAccent: str  # e.g., "Glow" - the stylized part of the name
+    brandAccent: str
     tagline: str
     aboutText: str
-    # Location
     area: str
     address: str
-    defaultArea: str  # Default area for booking form
-    # Contact
+    defaultArea: str
     phone: str
     whatsappNumber: str
     googleMapsUrl: str
     openingHours: str
-    # Social & Payment
     upiId: Optional[str] = None
     upiQrImageUrl: Optional[str] = None
     instagramUrl: Optional[str] = None
     facebookUrl: Optional[str] = None
-    # Branding
     heroImageUrl: Optional[str] = None
     logoUrl: Optional[str] = None
-    # Colors (CSS values)
     primaryColor: str = "#D69E8E"
     accentColor: str = "#9D5C63"
-    # Content
     heroTitle: str
     heroSubtitle: str
     ctaText: str
     bookingTips: List[str] = []
-    # Stats/Trust Badges
     stats: List[StatBadge] = []
-    # Policies & FAQs
     policies: List[Policy] = []
     faqs: List[FAQ] = []
-    # SEO
     metaTitle: Optional[str] = None
     metaDescription: Optional[str] = None
+    # Booking system fields
+    workingHoursJson: List[dict] = []
+    timezone: str = "Asia/Kolkata"
+    slotDurationMins: int = 30
 
 class ServiceCategory(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -108,6 +130,8 @@ class Service(BaseModel):
     description: Optional[str] = None
     active: bool = True
     imageUrl: Optional[str] = None
+    depositRequired: bool = False
+    depositAmount: Optional[int] = None
 
 class GalleryImage(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -141,9 +165,48 @@ class Admin(BaseModel):
     email: str
     password_hash: str
     name: str
+    role: str = UserRole.SALON_OWNER
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
-# ============== CREATE MODELS ==============
+class FeatureFlags(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = "global_features"
+    booking_calendar_enabled: bool = False
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_by: Optional[str] = None
+
+class Booking(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    salonId: str
+    serviceId: str
+    staffId: Optional[str] = None
+    clientName: str
+    clientPhone: str
+    notes: Optional[str] = None
+    startTime: str  # ISO format
+    endTime: str    # ISO format
+    status: str = BookingStatus.PENDING
+    confirmBy: Optional[str] = None
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updatedAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+class BookingChange(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    bookingId: str
+    salonId: str
+    changedByUserId: str
+    oldStartTime: Optional[str] = None
+    newStartTime: Optional[str] = None
+    oldStaffId: Optional[str] = None
+    newStaffId: Optional[str] = None
+    oldStatus: Optional[str] = None
+    newStatus: Optional[str] = None
+    reason: str
+    changedAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+# ============== REQUEST/RESPONSE MODELS ==============
 
 class SalonProfileUpdate(BaseModel):
     name: Optional[str] = None
@@ -174,6 +237,9 @@ class SalonProfileUpdate(BaseModel):
     faqs: Optional[List[dict]] = None
     metaTitle: Optional[str] = None
     metaDescription: Optional[str] = None
+    workingHoursJson: Optional[List[dict]] = None
+    timezone: Optional[str] = None
+    slotDurationMins: Optional[int] = None
 
 class ServiceCategoryCreate(BaseModel):
     name: str
@@ -187,6 +253,8 @@ class ServiceCreate(BaseModel):
     description: Optional[str] = None
     active: bool = True
     imageUrl: Optional[str] = None
+    depositRequired: bool = False
+    depositAmount: Optional[int] = None
 
 class ServiceUpdate(BaseModel):
     categoryId: Optional[str] = None
@@ -196,6 +264,8 @@ class ServiceUpdate(BaseModel):
     description: Optional[str] = None
     active: Optional[bool] = None
     imageUrl: Optional[str] = None
+    depositRequired: Optional[bool] = None
+    depositAmount: Optional[int] = None
 
 class GalleryImageCreate(BaseModel):
     imageUrl: str
@@ -230,6 +300,25 @@ class AdminLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
+    role: str
+
+class FeatureFlagsUpdate(BaseModel):
+    booking_calendar_enabled: Optional[bool] = None
+
+class BookingCreate(BaseModel):
+    serviceId: str
+    clientName: str
+    clientPhone: str
+    startTime: str
+    notes: Optional[str] = None
+
+class BookingStatusUpdate(BaseModel):
+    status: str
+
+class BookingReschedule(BaseModel):
+    newStartTime: str
+    staffId: Optional[str] = None
+    reason: str
 
 # ============== AUTH HELPERS ==============
 
@@ -260,25 +349,160 @@ async def get_current_admin(credentials: HTTPAuthorizationCredentials = Depends(
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
+async def get_platform_admin(admin: dict = Depends(get_current_admin)):
+    if admin.get("role") != UserRole.PLATFORM_ADMIN:
+        raise HTTPException(status_code=403, detail="Platform admin access required")
+    return admin
+
+async def get_salon_admin(admin: dict = Depends(get_current_admin)):
+    if admin.get("role") not in [UserRole.SALON_OWNER, UserRole.SALON_ADMIN, UserRole.PLATFORM_ADMIN]:
+        raise HTTPException(status_code=403, detail="Salon admin access required")
+    return admin
+
+async def check_booking_enabled():
+    features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
+    if not features or not features.get("booking_calendar_enabled", False):
+        raise HTTPException(status_code=403, detail="Booking calendar disabled by admin")
+    return True
+
+# ============== AVAILABILITY HELPERS ==============
+
+def parse_time(time_str: str) -> datetime:
+    """Parse ISO time string to datetime"""
+    return datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+
+def get_day_name(date: datetime) -> str:
+    """Get lowercase day name"""
+    return date.strftime("%A").lower()
+
+async def get_working_hours_for_date(salon: dict, date: datetime) -> tuple:
+    """Get working hours for a specific date"""
+    day_name = get_day_name(date)
+    working_hours = salon.get("workingHoursJson", [])
+    
+    for wh in working_hours:
+        if wh.get("day", "").lower() == day_name:
+            if wh.get("closed", False):
+                return None, None
+            return wh.get("open", "10:00"), wh.get("close", "20:00")
+    
+    # Default working hours
+    return "10:00", "20:00"
+
+async def get_available_slots(salon_id: str, service_id: str, date_str: str) -> List[dict]:
+    """Calculate available time slots for a given date and service"""
+    salon = await db.salon_profile.find_one({}, {"_id": 0})
+    if not salon:
+        return []
+    
+    service = await db.services.find_one({"id": service_id, "active": True}, {"_id": 0})
+    if not service:
+        return []
+    
+    duration = service.get("durationMins", 30)
+    slot_duration = salon.get("slotDurationMins", 30)
+    
+    # Parse the date
+    try:
+        target_date = datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        return []
+    
+    # Get working hours
+    open_time, close_time = await get_working_hours_for_date(salon, target_date)
+    if not open_time or not close_time:
+        return []  # Salon closed on this day
+    
+    # Create datetime objects for open/close
+    open_hour, open_min = map(int, open_time.split(":"))
+    close_hour, close_min = map(int, close_time.split(":"))
+    
+    day_start = target_date.replace(hour=open_hour, minute=open_min, tzinfo=IST)
+    day_end = target_date.replace(hour=close_hour, minute=close_min, tzinfo=IST)
+    
+    # Get existing bookings for the day
+    start_of_day = target_date.replace(hour=0, minute=0, second=0, tzinfo=IST)
+    end_of_day = target_date.replace(hour=23, minute=59, second=59, tzinfo=IST)
+    
+    existing_bookings = await db.bookings.find({
+        "salonId": salon_id,
+        "startTime": {"$gte": start_of_day.isoformat(), "$lt": end_of_day.isoformat()},
+        "status": {"$nin": [BookingStatus.CANCELLED]}
+    }, {"_id": 0}).to_list(100)
+    
+    # Build list of booked time ranges
+    booked_ranges = []
+    for booking in existing_bookings:
+        b_start = parse_time(booking["startTime"])
+        b_end = parse_time(booking["endTime"])
+        booked_ranges.append((b_start, b_end))
+    
+    # Generate available slots
+    slots = []
+    current_slot = day_start
+    
+    while current_slot + timedelta(minutes=duration) <= day_end:
+        slot_end = current_slot + timedelta(minutes=duration)
+        
+        # Check if slot conflicts with any booking
+        is_available = True
+        for b_start, b_end in booked_ranges:
+            # Check for overlap
+            if not (slot_end <= b_start or current_slot >= b_end):
+                is_available = False
+                break
+        
+        # Don't show past slots for today
+        now = datetime.now(IST)
+        if target_date.date() == now.date() and current_slot < now:
+            is_available = False
+        
+        if is_available:
+            slots.append({
+                "startTime": current_slot.isoformat(),
+                "endTime": slot_end.isoformat(),
+                "display": current_slot.strftime("%I:%M %p")
+            })
+        
+        current_slot += timedelta(minutes=slot_duration)
+    
+    return slots
+
+async def check_slot_available(salon_id: str, start_time: str, end_time: str, exclude_booking_id: str = None) -> bool:
+    """Check if a time slot is available (no overlapping bookings)"""
+    query = {
+        "salonId": salon_id,
+        "status": {"$nin": [BookingStatus.CANCELLED]},
+        "$or": [
+            {"startTime": {"$lt": end_time}, "endTime": {"$gt": start_time}}
+        ]
+    }
+    
+    if exclude_booking_id:
+        query["id"] = {"$ne": exclude_booking_id}
+    
+    existing = await db.bookings.find_one(query, {"_id": 0})
+    return existing is None
+
 # ============== PUBLIC ROUTES ==============
 
 @api_router.get("/")
 async def root():
-    return {"message": "Glow Beauty Studio API"}
+    return {"message": "Salon Booking System API"}
 
-@api_router.get("/salon", response_model=SalonProfile)
+@api_router.get("/salon")
 async def get_salon_profile():
     profile = await db.salon_profile.find_one({}, {"_id": 0})
     if not profile:
         raise HTTPException(status_code=404, detail="Salon profile not found")
     return profile
 
-@api_router.get("/categories", response_model=List[ServiceCategory])
+@api_router.get("/categories")
 async def get_categories():
     categories = await db.service_categories.find({}, {"_id": 0}).sort("order", 1).to_list(100)
     return categories
 
-@api_router.get("/services", response_model=List[Service])
+@api_router.get("/services")
 async def get_services(active_only: bool = True):
     query = {"active": True} if active_only else {}
     services = await db.services.find(query, {"_id": 0}).to_list(500)
@@ -299,7 +523,7 @@ async def get_services_grouped():
             })
     return grouped
 
-@api_router.get("/gallery", response_model=List[GalleryImage])
+@api_router.get("/gallery")
 async def get_gallery(tag: Optional[str] = None):
     query = {"tag": tag} if tag else {}
     images = await db.gallery_images.find(query, {"_id": 0}).sort("order", 1).to_list(100)
@@ -310,12 +534,12 @@ async def get_gallery_tags():
     tags = await db.gallery_images.distinct("tag")
     return tags
 
-@api_router.get("/reviews", response_model=List[Review])
+@api_router.get("/reviews")
 async def get_reviews():
     reviews = await db.reviews.find({}, {"_id": 0}).sort("order", 1).to_list(50)
     return reviews
 
-@api_router.get("/offers", response_model=List[Offer])
+@api_router.get("/offers")
 async def get_offers(active_only: bool = True):
     query = {"active": True} if active_only else {}
     offers = await db.offers.find(query, {"_id": 0}).to_list(50)
@@ -323,14 +547,13 @@ async def get_offers(active_only: bool = True):
 
 @api_router.get("/home-data")
 async def get_home_data():
-    """Get all data needed for home page"""
     salon = await db.salon_profile.find_one({}, {"_id": 0})
     categories = await db.service_categories.find({}, {"_id": 0}).sort("order", 1).to_list(100)
     services = await db.services.find({"active": True}, {"_id": 0}).to_list(500)
     reviews = await db.reviews.find({}, {"_id": 0}).sort("order", 1).to_list(10)
     offers = await db.offers.find({"active": True}, {"_id": 0}).to_list(10)
+    features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
     
-    # Get top 6 services
     top_services = services[:6]
     
     return {
@@ -338,28 +561,133 @@ async def get_home_data():
         "categories": categories,
         "topServices": top_services,
         "reviews": reviews,
-        "offers": offers
+        "offers": offers,
+        "features": features or {"booking_calendar_enabled": False}
+    }
+
+@api_router.get("/features")
+async def get_public_features():
+    """Get feature flags for public consumption"""
+    features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
+    return features or {"booking_calendar_enabled": False}
+
+# ============== PUBLIC BOOKING ROUTES ==============
+
+@public_router.get("/availability")
+async def get_availability(serviceId: str, date: str):
+    """Get available time slots for a service on a given date"""
+    await check_booking_enabled()
+    
+    salon = await db.salon_profile.find_one({}, {"_id": 0})
+    if not salon:
+        raise HTTPException(status_code=404, detail="Salon not found")
+    
+    slots = await get_available_slots(salon.get("id", "salon-1"), serviceId, date)
+    return {"slots": slots, "date": date, "serviceId": serviceId}
+
+@public_router.post("/bookings")
+async def create_public_booking(data: BookingCreate):
+    """Create a new booking (client-facing)"""
+    await check_booking_enabled()
+    
+    salon = await db.salon_profile.find_one({}, {"_id": 0})
+    if not salon:
+        raise HTTPException(status_code=404, detail="Salon not found")
+    
+    service = await db.services.find_one({"id": data.serviceId, "active": True}, {"_id": 0})
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Calculate end time
+    start_time = parse_time(data.startTime)
+    end_time = start_time + timedelta(minutes=service.get("durationMins", 30))
+    
+    # Check availability
+    is_available = await check_slot_available(
+        salon.get("id", "salon-1"),
+        data.startTime,
+        end_time.isoformat()
+    )
+    
+    if not is_available:
+        raise HTTPException(status_code=409, detail="Time slot is no longer available")
+    
+    # Create booking
+    booking = Booking(
+        salonId=salon.get("id", "salon-1"),
+        serviceId=data.serviceId,
+        clientName=data.clientName,
+        clientPhone=data.clientPhone,
+        notes=data.notes,
+        startTime=data.startTime,
+        endTime=end_time.isoformat(),
+        status=BookingStatus.PENDING
+    )
+    
+    await db.bookings.insert_one(booking.model_dump())
+    
+    # Generate WhatsApp message
+    service_name = service.get("name", "Service")
+    salon_name = salon.get("name", "Salon")
+    formatted_time = start_time.strftime("%I:%M %p")
+    formatted_date = start_time.strftime("%d %b %Y")
+    
+    whatsapp_message = f"Hi {salon_name}, I booked {service_name} on {formatted_date} at {formatted_time}. Booking ID: {booking.id}. Please confirm."
+    whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={whatsapp_message}"
+    
+    return {
+        "booking": booking.model_dump(),
+        "whatsappUrl": whatsapp_url,
+        "message": "Booking created successfully"
     }
 
 # ============== AUTH ROUTES ==============
 
-@api_router.post("/auth/login", response_model=TokenResponse)
+@api_router.post("/auth/login")
 async def admin_login(credentials: AdminLogin):
     admin = await db.admins.find_one({"email": credentials.email}, {"_id": 0})
     if not admin or not verify_password(credentials.password, admin.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    token = create_access_token({"sub": admin["id"], "email": admin["email"]})
-    return TokenResponse(access_token=token)
+    token = create_access_token({"sub": admin["id"], "email": admin["email"], "role": admin.get("role", UserRole.SALON_OWNER)})
+    return TokenResponse(access_token=token, role=admin.get("role", UserRole.SALON_OWNER))
 
 @api_router.get("/auth/me")
 async def get_current_admin_info(admin: dict = Depends(get_current_admin)):
-    return {"id": admin["id"], "email": admin["email"], "name": admin["name"]}
+    return {"id": admin["id"], "email": admin["email"], "name": admin["name"], "role": admin.get("role", UserRole.SALON_OWNER)}
 
-# ============== ADMIN ROUTES ==============
+# ============== PLATFORM ADMIN ROUTES ==============
 
-@api_router.put("/admin/salon", response_model=SalonProfile)
-async def update_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(get_current_admin)):
+@admin_router.get("/features")
+async def get_feature_flags(admin: dict = Depends(get_platform_admin)):
+    """Get all feature flags (Platform Admin only)"""
+    features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
+    if not features:
+        # Create default feature flags
+        features = FeatureFlags().model_dump()
+        await db.feature_flags.insert_one(features)
+    return features
+
+@admin_router.patch("/features")
+async def update_feature_flags(data: FeatureFlagsUpdate, admin: dict = Depends(get_platform_admin)):
+    """Update feature flags (Platform Admin only)"""
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+    update_data["updated_by"] = admin["email"]
+    
+    await db.feature_flags.update_one(
+        {"id": "global_features"},
+        {"$set": update_data},
+        upsert=True
+    )
+    
+    features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
+    return features
+
+# ============== SALON ADMIN ROUTES ==============
+
+@api_router.put("/admin/salon")
+async def update_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(get_salon_admin)):
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if update_data:
         await db.salon_profile.update_one({}, {"$set": update_data})
@@ -367,14 +695,14 @@ async def update_salon_profile(data: SalonProfileUpdate, admin: dict = Depends(g
     return profile
 
 # Categories CRUD
-@api_router.post("/admin/categories", response_model=ServiceCategory)
-async def create_category(data: ServiceCategoryCreate, admin: dict = Depends(get_current_admin)):
+@api_router.post("/admin/categories")
+async def create_category(data: ServiceCategoryCreate, admin: dict = Depends(get_salon_admin)):
     category = ServiceCategory(**data.model_dump())
     await db.service_categories.insert_one(category.model_dump())
     return category
 
-@api_router.put("/admin/categories/{category_id}", response_model=ServiceCategory)
-async def update_category(category_id: str, data: ServiceCategoryCreate, admin: dict = Depends(get_current_admin)):
+@api_router.put("/admin/categories/{category_id}")
+async def update_category(category_id: str, data: ServiceCategoryCreate, admin: dict = Depends(get_salon_admin)):
     await db.service_categories.update_one({"id": category_id}, {"$set": data.model_dump()})
     category = await db.service_categories.find_one({"id": category_id}, {"_id": 0})
     if not category:
@@ -382,21 +710,21 @@ async def update_category(category_id: str, data: ServiceCategoryCreate, admin: 
     return category
 
 @api_router.delete("/admin/categories/{category_id}")
-async def delete_category(category_id: str, admin: dict = Depends(get_current_admin)):
+async def delete_category(category_id: str, admin: dict = Depends(get_salon_admin)):
     result = await db.service_categories.delete_one({"id": category_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Category not found")
     return {"message": "Category deleted"}
 
 # Services CRUD
-@api_router.post("/admin/services", response_model=Service)
-async def create_service(data: ServiceCreate, admin: dict = Depends(get_current_admin)):
+@api_router.post("/admin/services")
+async def create_service(data: ServiceCreate, admin: dict = Depends(get_salon_admin)):
     service = Service(**data.model_dump())
     await db.services.insert_one(service.model_dump())
     return service
 
-@api_router.put("/admin/services/{service_id}", response_model=Service)
-async def update_service(service_id: str, data: ServiceUpdate, admin: dict = Depends(get_current_admin)):
+@api_router.put("/admin/services/{service_id}")
+async def update_service(service_id: str, data: ServiceUpdate, admin: dict = Depends(get_salon_admin)):
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if update_data:
         await db.services.update_one({"id": service_id}, {"$set": update_data})
@@ -406,14 +734,14 @@ async def update_service(service_id: str, data: ServiceUpdate, admin: dict = Dep
     return service
 
 @api_router.delete("/admin/services/{service_id}")
-async def delete_service(service_id: str, admin: dict = Depends(get_current_admin)):
+async def delete_service(service_id: str, admin: dict = Depends(get_salon_admin)):
     result = await db.services.delete_one({"id": service_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Service not found")
     return {"message": "Service deleted"}
 
 @api_router.patch("/admin/services/{service_id}/toggle")
-async def toggle_service(service_id: str, admin: dict = Depends(get_current_admin)):
+async def toggle_service(service_id: str, admin: dict = Depends(get_salon_admin)):
     service = await db.services.find_one({"id": service_id}, {"_id": 0})
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
@@ -422,14 +750,14 @@ async def toggle_service(service_id: str, admin: dict = Depends(get_current_admi
     return {"active": new_status}
 
 # Gallery CRUD
-@api_router.post("/admin/gallery", response_model=GalleryImage)
-async def create_gallery_image(data: GalleryImageCreate, admin: dict = Depends(get_current_admin)):
+@api_router.post("/admin/gallery")
+async def create_gallery_image(data: GalleryImageCreate, admin: dict = Depends(get_salon_admin)):
     image = GalleryImage(**data.model_dump())
     await db.gallery_images.insert_one(image.model_dump())
     return image
 
-@api_router.put("/admin/gallery/{image_id}", response_model=GalleryImage)
-async def update_gallery_image(image_id: str, data: GalleryImageCreate, admin: dict = Depends(get_current_admin)):
+@api_router.put("/admin/gallery/{image_id}")
+async def update_gallery_image(image_id: str, data: GalleryImageCreate, admin: dict = Depends(get_salon_admin)):
     await db.gallery_images.update_one({"id": image_id}, {"$set": data.model_dump()})
     image = await db.gallery_images.find_one({"id": image_id}, {"_id": 0})
     if not image:
@@ -437,21 +765,21 @@ async def update_gallery_image(image_id: str, data: GalleryImageCreate, admin: d
     return image
 
 @api_router.delete("/admin/gallery/{image_id}")
-async def delete_gallery_image(image_id: str, admin: dict = Depends(get_current_admin)):
+async def delete_gallery_image(image_id: str, admin: dict = Depends(get_salon_admin)):
     result = await db.gallery_images.delete_one({"id": image_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Image not found")
     return {"message": "Image deleted"}
 
 # Reviews CRUD
-@api_router.post("/admin/reviews", response_model=Review)
-async def create_review(data: ReviewCreate, admin: dict = Depends(get_current_admin)):
+@api_router.post("/admin/reviews")
+async def create_review(data: ReviewCreate, admin: dict = Depends(get_salon_admin)):
     review = Review(**data.model_dump())
     await db.reviews.insert_one(review.model_dump())
     return review
 
-@api_router.put("/admin/reviews/{review_id}", response_model=Review)
-async def update_review(review_id: str, data: ReviewCreate, admin: dict = Depends(get_current_admin)):
+@api_router.put("/admin/reviews/{review_id}")
+async def update_review(review_id: str, data: ReviewCreate, admin: dict = Depends(get_salon_admin)):
     await db.reviews.update_one({"id": review_id}, {"$set": data.model_dump()})
     review = await db.reviews.find_one({"id": review_id}, {"_id": 0})
     if not review:
@@ -459,21 +787,21 @@ async def update_review(review_id: str, data: ReviewCreate, admin: dict = Depend
     return review
 
 @api_router.delete("/admin/reviews/{review_id}")
-async def delete_review(review_id: str, admin: dict = Depends(get_current_admin)):
+async def delete_review(review_id: str, admin: dict = Depends(get_salon_admin)):
     result = await db.reviews.delete_one({"id": review_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Review not found")
     return {"message": "Review deleted"}
 
 # Offers CRUD
-@api_router.post("/admin/offers", response_model=Offer)
-async def create_offer(data: OfferCreate, admin: dict = Depends(get_current_admin)):
+@api_router.post("/admin/offers")
+async def create_offer(data: OfferCreate, admin: dict = Depends(get_salon_admin)):
     offer = Offer(**data.model_dump())
     await db.offers.insert_one(offer.model_dump())
     return offer
 
-@api_router.put("/admin/offers/{offer_id}", response_model=Offer)
-async def update_offer(offer_id: str, data: OfferUpdate, admin: dict = Depends(get_current_admin)):
+@api_router.put("/admin/offers/{offer_id}")
+async def update_offer(offer_id: str, data: OfferUpdate, admin: dict = Depends(get_salon_admin)):
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     if update_data:
         await db.offers.update_one({"id": offer_id}, {"$set": update_data})
@@ -483,14 +811,14 @@ async def update_offer(offer_id: str, data: OfferUpdate, admin: dict = Depends(g
     return offer
 
 @api_router.delete("/admin/offers/{offer_id}")
-async def delete_offer(offer_id: str, admin: dict = Depends(get_current_admin)):
+async def delete_offer(offer_id: str, admin: dict = Depends(get_salon_admin)):
     result = await db.offers.delete_one({"id": offer_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Offer not found")
     return {"message": "Offer deleted"}
 
 @api_router.patch("/admin/offers/{offer_id}/toggle")
-async def toggle_offer(offer_id: str, admin: dict = Depends(get_current_admin)):
+async def toggle_offer(offer_id: str, admin: dict = Depends(get_salon_admin)):
     offer = await db.offers.find_one({"id": offer_id}, {"_id": 0})
     if not offer:
         raise HTTPException(status_code=404, detail="Offer not found")
@@ -498,124 +826,280 @@ async def toggle_offer(offer_id: str, admin: dict = Depends(get_current_admin)):
     await db.offers.update_one({"id": offer_id}, {"$set": {"active": new_status}})
     return {"active": new_status}
 
-# Image Upload (Base64)
+# Image Upload
 @api_router.post("/admin/upload")
-async def upload_image(file: UploadFile = File(...), admin: dict = Depends(get_current_admin)):
+async def upload_image(file: UploadFile = File(...), admin: dict = Depends(get_salon_admin)):
     contents = await file.read()
     base64_data = base64.b64encode(contents).decode('utf-8')
     content_type = file.content_type or "image/jpeg"
     data_url = f"data:{content_type};base64,{base64_data}"
     return {"url": data_url}
 
+# ============== SALON BOOKING MANAGEMENT ROUTES ==============
+
+@salon_router.get("/bookings")
+async def get_salon_bookings(
+    admin: dict = Depends(get_salon_admin),
+    from_date: Optional[str] = None,
+    to_date: Optional[str] = None,
+    status: Optional[str] = None,
+    view: str = "day"
+):
+    """Get bookings for salon dashboard"""
+    await check_booking_enabled()
+    
+    query = {}
+    
+    if from_date:
+        query["startTime"] = {"$gte": from_date}
+    if to_date:
+        if "startTime" in query:
+            query["startTime"]["$lt"] = to_date
+        else:
+            query["startTime"] = {"$lt": to_date}
+    if status:
+        query["status"] = status
+    
+    bookings = await db.bookings.find(query, {"_id": 0}).sort("startTime", 1).to_list(500)
+    
+    # Enrich with service names
+    services = {s["id"]: s for s in await db.services.find({}, {"_id": 0}).to_list(100)}
+    
+    for booking in bookings:
+        service = services.get(booking.get("serviceId"))
+        if service:
+            booking["serviceName"] = service.get("name")
+            booking["serviceDuration"] = service.get("durationMins")
+    
+    return {"bookings": bookings, "total": len(bookings)}
+
+@salon_router.get("/bookings/{booking_id}")
+async def get_booking_detail(booking_id: str, admin: dict = Depends(get_salon_admin)):
+    """Get single booking details"""
+    await check_booking_enabled()
+    
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Get service info
+    service = await db.services.find_one({"id": booking.get("serviceId")}, {"_id": 0})
+    if service:
+        booking["serviceName"] = service.get("name")
+        booking["serviceDuration"] = service.get("durationMins")
+    
+    return booking
+
+@salon_router.patch("/bookings/{booking_id}/status")
+async def update_booking_status(
+    booking_id: str,
+    data: BookingStatusUpdate,
+    admin: dict = Depends(get_salon_admin)
+):
+    """Update booking status (confirm, cancel, complete, no_show)"""
+    await check_booking_enabled()
+    
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    valid_statuses = [BookingStatus.PENDING, BookingStatus.CONFIRMED, BookingStatus.CANCELLED, BookingStatus.COMPLETED, BookingStatus.NO_SHOW]
+    if data.status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    old_status = booking.get("status")
+    
+    # Update booking
+    await db.bookings.update_one(
+        {"id": booking_id},
+        {"$set": {"status": data.status, "updatedAt": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    # Log change
+    change = BookingChange(
+        bookingId=booking_id,
+        salonId=booking.get("salonId"),
+        changedByUserId=admin["id"],
+        oldStatus=old_status,
+        newStatus=data.status,
+        reason=f"Status changed from {old_status} to {data.status}"
+    )
+    await db.booking_changes.insert_one(change.model_dump())
+    
+    updated_booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    return updated_booking
+
+@salon_router.patch("/bookings/{booking_id}/reschedule")
+async def reschedule_booking(
+    booking_id: str,
+    data: BookingReschedule,
+    admin: dict = Depends(get_salon_admin)
+):
+    """Reschedule a booking to a new time slot"""
+    await check_booking_enabled()
+    
+    booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    # Get service for duration
+    service = await db.services.find_one({"id": booking.get("serviceId")}, {"_id": 0})
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Calculate new end time
+    new_start = parse_time(data.newStartTime)
+    new_end = new_start + timedelta(minutes=service.get("durationMins", 30))
+    
+    # Check if new slot is available (excluding current booking)
+    is_available = await check_slot_available(
+        booking.get("salonId"),
+        data.newStartTime,
+        new_end.isoformat(),
+        exclude_booking_id=booking_id
+    )
+    
+    if not is_available:
+        raise HTTPException(status_code=409, detail="The new time slot conflicts with an existing booking")
+    
+    old_start = booking.get("startTime")
+    old_staff = booking.get("staffId")
+    
+    # Update booking
+    update_data = {
+        "startTime": data.newStartTime,
+        "endTime": new_end.isoformat(),
+        "updatedAt": datetime.now(timezone.utc).isoformat(),
+        "status": BookingStatus.CONFIRMED
+    }
+    if data.staffId:
+        update_data["staffId"] = data.staffId
+    
+    await db.bookings.update_one({"id": booking_id}, {"$set": update_data})
+    
+    # Log change
+    change = BookingChange(
+        bookingId=booking_id,
+        salonId=booking.get("salonId"),
+        changedByUserId=admin["id"],
+        oldStartTime=old_start,
+        newStartTime=data.newStartTime,
+        oldStaffId=old_staff,
+        newStaffId=data.staffId,
+        reason=data.reason
+    )
+    await db.booking_changes.insert_one(change.model_dump())
+    
+    updated_booking = await db.bookings.find_one({"id": booking_id}, {"_id": 0})
+    return updated_booking
+
+@salon_router.get("/bookings/{booking_id}/changes")
+async def get_booking_changes(booking_id: str, admin: dict = Depends(get_salon_admin)):
+    """Get audit history for a booking"""
+    await check_booking_enabled()
+    
+    changes = await db.booking_changes.find(
+        {"bookingId": booking_id},
+        {"_id": 0}
+    ).sort("changedAt", -1).to_list(100)
+    
+    return {"changes": changes}
+
+@salon_router.get("/next-available")
+async def get_next_available_slots(
+    serviceId: str,
+    admin: dict = Depends(get_salon_admin)
+):
+    """Get next 3 available slots starting from now"""
+    await check_booking_enabled()
+    
+    salon = await db.salon_profile.find_one({}, {"_id": 0})
+    if not salon:
+        raise HTTPException(status_code=404, detail="Salon not found")
+    
+    slots = []
+    current_date = datetime.now(IST).date()
+    days_checked = 0
+    
+    while len(slots) < 3 and days_checked < 14:
+        date_str = current_date.strftime("%Y-%m-%d")
+        day_slots = await get_available_slots(salon.get("id", "salon-1"), serviceId, date_str)
+        slots.extend(day_slots)
+        current_date += timedelta(days=1)
+        days_checked += 1
+    
+    return {"slots": slots[:3]}
+
 # ============== SEED DATA ==============
 
 @api_router.post("/seed")
 async def seed_database():
-    """Seed database with sample data - only works if database is empty (first-time setup)"""
+    """Seed database with sample data"""
     
-    # Check if already seeded - prevent public writes if data exists
     existing = await db.salon_profile.find_one({})
     if existing:
         return {"message": "Database already seeded", "seeded": False}
     
-    # Also check if any admin exists - if so, require auth
     admin_exists = await db.admins.find_one({})
     if admin_exists:
-        raise HTTPException(status_code=403, detail="Database already initialized. Use admin panel to manage data.")
+        raise HTTPException(status_code=403, detail="Database already initialized")
     
-    # Salon Profile - Full Template Data
+    # Feature Flags
+    features = FeatureFlags(booking_calendar_enabled=False)
+    await db.feature_flags.insert_one(features.model_dump())
+    
+    # Default working hours
+    default_working_hours = [
+        {"day": "monday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "tuesday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "wednesday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "thursday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "friday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "saturday", "open": "10:00", "close": "20:00", "closed": False},
+        {"day": "sunday", "open": "11:00", "close": "18:00", "closed": False},
+    ]
+    
+    # Salon Profile
     salon = SalonProfile(
         id="salon-1",
-        # Basic Info
         name="Glow Beauty Studio",
         brandAccent="Glow",
         tagline="Your destination for beauty and self-care",
-        aboutText="We offer premium salon services with a personalized touch. Our expert team is dedicated to making you look and feel your best.",
-        # Location
+        aboutText="We offer premium salon services with a personalized touch.",
         area="Dombivli East",
         address="Shop No. 12, Ganga Complex, Near Railway Station, Dombivli East, Maharashtra 421201",
         defaultArea="Dombivli",
-        # Contact
         phone="+91 98765 43210",
-        whatsappNumber="918879878493",
+        whatsappNumber="919876543210",
         googleMapsUrl="https://maps.google.com/?q=19.2183,73.0878",
         openingHours="Mon-Sat: 10:00 AM - 8:00 PM, Sun: 11:00 AM - 6:00 PM",
-        # Social
         instagramUrl="https://instagram.com/glowbeautystudio",
-        # Branding
         heroImageUrl="https://images.unsplash.com/photo-1633443682042-17462ad4ad76?w=1920&q=80",
         primaryColor="#D69E8E",
         accentColor="#9D5C63",
-        # Content
         heroTitle="Welcome to Premium Beauty Care",
-        heroSubtitle="Experience the best in beauty services. Our expert team is ready to pamper you with personalized treatments.",
+        heroSubtitle="Experience the best in beauty services.",
         ctaText="Book Appointment",
-        bookingTips=[
-            "Book at least 1 day in advance for regular services",
-            "Bridal packages require 2-week advance booking",
-            "Arrive 10 minutes early for your appointment",
-            "Cancellations accepted up to 2 hours before"
-        ],
-        # Stats/Trust Badges
+        bookingTips=["Book 1 day in advance", "Arrive 10 mins early", "Bridal needs 2-week notice"],
         stats=[
-            StatBadge(value="5+", label="Years Experience"),
-            StatBadge(value="2000+", label="Happy Clients"),
-            StatBadge(value="4.9", label="Rating"),
-            StatBadge(value="50+", label="Services")
+            {"value": "5+", "label": "Years Experience"},
+            {"value": "2000+", "label": "Happy Clients"},
+            {"value": "4.9", "label": "Rating"},
+            {"value": "50+", "label": "Services"}
         ],
-        # Policies
         policies=[
-            Policy(
-                title="Appointment Policy",
-                icon="clock",
-                points=[
-                    "Please arrive 10 minutes before your scheduled appointment",
-                    "Late arrivals may result in reduced service time or rescheduling",
-                    "Walk-ins are welcome but appointments are given priority"
-                ]
-            ),
-            Policy(
-                title="Cancellation Policy",
-                icon="alert",
-                points=[
-                    "Cancel at least 2 hours before your appointment",
-                    "Repeated no-shows may require advance payment for future bookings",
-                    "Bridal packages require 48 hours notice for cancellation"
-                ]
-            ),
-            Policy(
-                title="Payment Policy",
-                icon="credit-card",
-                points=[
-                    "We accept Cash, UPI, and all major cards",
-                    "Bridal packages require 50% advance payment",
-                    "Prices are subject to change without prior notice"
-                ]
-            ),
-            Policy(
-                title="Health & Safety",
-                icon="shield",
-                points=[
-                    "All tools are sterilized between clients",
-                    "Please inform us of any allergies or skin conditions",
-                    "Patch tests are recommended for color and chemical treatments"
-                ]
-            )
+            {"title": "Appointment Policy", "icon": "clock", "points": ["Arrive 10 mins early", "Walk-ins welcome"]},
+            {"title": "Cancellation Policy", "icon": "alert", "points": ["Cancel 2 hours before", "No-show fee may apply"]}
         ],
-        # FAQs
         faqs=[
-            FAQ(question="Do I need to book an appointment in advance?", answer="While walk-ins are welcome, we highly recommend booking in advance to ensure your preferred time slot is available. For bridal services, please book at least 2 weeks in advance."),
-            FAQ(question="What payment methods do you accept?", answer="We accept cash, all major credit/debit cards, UPI payments (Google Pay, PhonePe, Paytm), and bank transfers for larger packages."),
-            FAQ(question="How long does a bridal makeup session take?", answer="A complete bridal makeup session typically takes 2-3 hours, including hair styling. We recommend arriving at least 3 hours before the event time."),
-            FAQ(question="Do you offer home services?", answer="Yes, we offer home services for bridal makeup and special occasions. Additional charges apply based on location. Please contact us for details."),
-            FAQ(question="What products do you use?", answer="We use premium, professional-grade products from brands like L'Oreal Professional, Schwarzkopf, O3+, VLCC, and more. We also offer organic and herbal options upon request."),
-            FAQ(question="Can I see the products before my treatment?", answer="Absolutely! We believe in transparency. Our staff will show you the products before use and explain the procedure."),
-            FAQ(question="Do you offer gift cards or packages?", answer="Yes! Gift cards are available for any amount. We also have special packages for birthdays, anniversaries, and festivals. Contact us for current offers."),
-            FAQ(question="Is parking available near the salon?", answer="Yes, there is public parking available nearby. You can also find street parking on the main road.")
+            {"question": "Do I need to book in advance?", "answer": "Walk-ins welcome, but booking recommended."},
+            {"question": "What payment methods?", "answer": "Cash, UPI, Cards accepted."}
         ],
-        # SEO
-        metaTitle="Glow Beauty Studio - Premium Salon in Dombivli",
-        metaDescription="Your destination for premium beauty services in Dombivli. Hair, skin, nails, bridal packages and more."
+        metaTitle="Glow Beauty Studio - Premium Salon",
+        metaDescription="Premium beauty services in Dombivli.",
+        workingHoursJson=default_working_hours,
+        timezone="Asia/Kolkata",
+        slotDurationMins=30
     )
     await db.salon_profile.insert_one(salon.model_dump())
     
@@ -625,62 +1109,28 @@ async def seed_database():
         ServiceCategory(id="cat-skin", name="Skin & Facial", order=2),
         ServiceCategory(id="cat-nails", name="Nail Art & Care", order=3),
         ServiceCategory(id="cat-bridal", name="Bridal Packages", order=4),
-        ServiceCategory(id="cat-spa", name="Body Spa & Massage", order=5),
     ]
     for cat in categories:
         await db.service_categories.insert_one(cat.model_dump())
     
     # Services
     services = [
-        # Hair
-        Service(id="svc-1", categoryId="cat-hair", name="Haircut & Styling", priceStartingAt=300, durationMins=45, description="Professional haircut with wash and blow dry", imageUrl="https://images.unsplash.com/photo-1767804852219-fa5af7d6d407?w=400"),
-        Service(id="svc-2", categoryId="cat-hair", name="Hair Coloring", priceStartingAt=1500, durationMins=120, description="Global or highlights with premium products", imageUrl="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400"),
-        Service(id="svc-3", categoryId="cat-hair", name="Hair Spa Treatment", priceStartingAt=800, durationMins=60, description="Deep conditioning and scalp massage", imageUrl="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400"),
-        Service(id="svc-4", categoryId="cat-hair", name="Keratin Treatment", priceStartingAt=3500, durationMins=180, description="Smooth, frizz-free hair for 3-4 months", imageUrl="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=400"),
-        # Skin
-        Service(id="svc-5", categoryId="cat-skin", name="Classic Facial", priceStartingAt=600, durationMins=45, description="Deep cleansing and hydrating facial", imageUrl="https://images.unsplash.com/photo-1762121903467-8cf5cc423ba5?w=400"),
-        Service(id="svc-6", categoryId="cat-skin", name="Gold Facial", priceStartingAt=1200, durationMins=60, description="Luxurious anti-aging treatment", imageUrl="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400"),
-        Service(id="svc-7", categoryId="cat-skin", name="Cleanup", priceStartingAt=400, durationMins=30, description="Quick refresh for glowing skin", imageUrl="https://images.unsplash.com/photo-1552693673-1bf958298935?w=400"),
-        Service(id="svc-8", categoryId="cat-skin", name="De-Tan Treatment", priceStartingAt=500, durationMins=45, description="Remove tan and brighten skin", imageUrl="https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400"),
-        # Nails
-        Service(id="svc-9", categoryId="cat-nails", name="Manicure", priceStartingAt=350, durationMins=30, description="Nail shaping, cuticle care, polish", imageUrl="https://images.unsplash.com/photo-1754799670410-b282791342c3?w=400"),
-        Service(id="svc-10", categoryId="cat-nails", name="Pedicure", priceStartingAt=450, durationMins=45, description="Complete foot care with massage", imageUrl="https://images.unsplash.com/photo-1519014816548-bf5fe059798b?w=400"),
-        Service(id="svc-11", categoryId="cat-nails", name="Nail Art", priceStartingAt=200, durationMins=30, description="Creative nail designs", imageUrl="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400"),
-        Service(id="svc-12", categoryId="cat-nails", name="Gel Extensions", priceStartingAt=1500, durationMins=90, description="Long-lasting gel nail extensions", imageUrl="https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=400"),
-        # Bridal
-        Service(id="svc-13", categoryId="cat-bridal", name="Bridal Makeup", priceStartingAt=8000, durationMins=120, description="Complete bridal look with HD makeup", imageUrl="https://images.unsplash.com/photo-1672985352725-a64688cb61b7?w=400"),
-        Service(id="svc-14", categoryId="cat-bridal", name="Pre-Bridal Package", priceStartingAt=15000, durationMins=300, description="4-session complete bridal prep", imageUrl="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=400"),
-        Service(id="svc-15", categoryId="cat-bridal", name="Party Makeup", priceStartingAt=2500, durationMins=60, description="Glamorous look for special occasions", imageUrl="https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=400"),
-        # Spa
-        Service(id="svc-16", categoryId="cat-spa", name="Full Body Massage", priceStartingAt=1200, durationMins=60, description="Relaxing aromatherapy massage", imageUrl="https://images.unsplash.com/photo-1544161515-4ab6ce6db874?w=400"),
-        Service(id="svc-17", categoryId="cat-spa", name="Head & Shoulder Massage", priceStartingAt=400, durationMins=30, description="Stress relief massage", imageUrl="https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400"),
+        Service(id="svc-1", categoryId="cat-hair", name="Haircut & Styling", priceStartingAt=300, durationMins=45, description="Professional haircut"),
+        Service(id="svc-2", categoryId="cat-hair", name="Hair Coloring", priceStartingAt=1500, durationMins=120, description="Global or highlights"),
+        Service(id="svc-3", categoryId="cat-hair", name="Hair Spa", priceStartingAt=800, durationMins=60, description="Deep conditioning"),
+        Service(id="svc-4", categoryId="cat-skin", name="Classic Facial", priceStartingAt=600, durationMins=45, description="Deep cleansing facial"),
+        Service(id="svc-5", categoryId="cat-skin", name="Gold Facial", priceStartingAt=1200, durationMins=60, description="Anti-aging treatment"),
+        Service(id="svc-6", categoryId="cat-nails", name="Manicure", priceStartingAt=350, durationMins=30, description="Nail shaping & polish"),
+        Service(id="svc-7", categoryId="cat-nails", name="Pedicure", priceStartingAt=450, durationMins=45, description="Complete foot care"),
+        Service(id="svc-8", categoryId="cat-bridal", name="Bridal Makeup", priceStartingAt=8000, durationMins=120, description="Complete bridal look", depositRequired=True, depositAmount=2000),
     ]
     for svc in services:
         await db.services.insert_one(svc.model_dump())
     
-    # Gallery Images
-    gallery = [
-        GalleryImage(id="gal-1", imageUrl="https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600", caption="Hair transformation", tag="hair", order=1),
-        GalleryImage(id="gal-2", imageUrl="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600", caption="Stunning highlights", tag="hair", order=2),
-        GalleryImage(id="gal-3", imageUrl="https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600", caption="Keratin results", tag="hair", order=3),
-        GalleryImage(id="gal-4", imageUrl="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600", caption="Glowing skin facial", tag="facial", order=4),
-        GalleryImage(id="gal-5", imageUrl="https://images.unsplash.com/photo-1552693673-1bf958298935?w=600", caption="Fresh cleanup", tag="facial", order=5),
-        GalleryImage(id="gal-6", imageUrl="https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600", caption="Nail art design", tag="nails", order=6),
-        GalleryImage(id="gal-7", imageUrl="https://images.unsplash.com/photo-1632345031435-8727f6897d53?w=600", caption="Gel extensions", tag="nails", order=7),
-        GalleryImage(id="gal-8", imageUrl="https://images.unsplash.com/photo-1672985352725-a64688cb61b7?w=600", caption="Bridal makeup", tag="bridal", order=8),
-        GalleryImage(id="gal-9", imageUrl="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600", caption="Wedding ready", tag="bridal", order=9),
-        GalleryImage(id="gal-10", imageUrl="https://images.unsplash.com/photo-1487412912498-0447578fcca8?w=600", caption="Party glam", tag="bridal", order=10),
-    ]
-    for img in gallery:
-        await db.gallery_images.insert_one(img.model_dump())
-    
     # Reviews
     reviews = [
-        Review(id="rev-1", name="Priya Sharma", rating=5, text="Best salon in Dombivli! The staff is so professional and friendly. My bridal makeup was absolutely perfect.", source="Google", order=1, avatarUrl="https://images.unsplash.com/photo-1590905775253-a4f0f3c426ff?w=100"),
-        Review(id="rev-2", name="Sneha Patil", rating=5, text="I've been coming here for 2 years. Love their hair spa treatment - always leaves my hair so soft and shiny!", source="Google", order=2, avatarUrl="https://images.unsplash.com/photo-1762320562149-1852601a77ba?w=100"),
-        Review(id="rev-3", name="Anjali Deshmukh", rating=5, text="Amazing nail art! They have such creative designs. Very hygienic too.", source="Instagram", order=3),
-        Review(id="rev-4", name="Kavita Joshi", rating=4, text="Great facials at reasonable prices. The gold facial made my skin glow for days!", source="Google", order=4),
-        Review(id="rev-5", name="Meera Kulkarni", rating=5, text="The pre-bridal package was worth every rupee. Got so many compliments on my wedding day!", source="Google", order=5),
+        Review(id="rev-1", name="Priya S.", rating=5, text="Amazing service! Highly recommended.", source="Google", order=1),
+        Review(id="rev-2", name="Sneha P.", rating=5, text="Love their hair spa treatment!", source="Google", order=2),
     ]
     for rev in reviews:
         await db.reviews.insert_one(rev.model_dump())
@@ -688,62 +1138,42 @@ async def seed_database():
     # Offers
     offers = [
         Offer(id="off-1", title="New Year Special", description="20% off on all hair services!", validTill="2026-01-31", active=True),
-        Offer(id="off-2", title="Bridal Season Offer", description="Free hair spa with any bridal package booking", validTill="2026-03-31", active=True),
-        Offer(id="off-3", title="First Visit Discount", description="15% off for first-time visitors", active=True),
     ]
     for off in offers:
         await db.offers.insert_one(off.model_dump())
     
-    # Create Admin User
-    admin = Admin(
-        id="admin-1",
+    # Create Platform Admin
+    platform_admin = Admin(
+        id="admin-platform",
+        email="platform@admin.com",
+        password_hash=hash_password("platform123"),
+        name="Platform Admin",
+        role=UserRole.PLATFORM_ADMIN
+    )
+    await db.admins.insert_one(platform_admin.model_dump())
+    
+    # Create Salon Admin
+    salon_admin = Admin(
+        id="admin-salon",
         email="admin@glowbeauty.com",
         password_hash=hash_password("admin123"),
-        name="Salon Admin"
+        name="Salon Admin",
+        role=UserRole.SALON_OWNER
     )
-    await db.admins.insert_one(admin.model_dump())
+    await db.admins.insert_one(salon_admin.model_dump())
     
-    return {"message": "Database seeded successfully", "seeded": True, "admin_email": "admin@glowbeauty.com", "admin_password": "admin123"}
+    return {
+        "message": "Database seeded successfully",
+        "seeded": True,
+        "platform_admin": {"email": "platform@admin.com", "password": "platform123"},
+        "salon_admin": {"email": "admin@glowbeauty.com", "password": "admin123"}
+    }
 
-# Admin-only: Reset and reseed database
-@api_router.post("/admin/reseed")
-async def reseed_database(admin: dict = Depends(get_current_admin)):
-    """Admin-only: Clear and reseed database with sample data"""
-    # Clear all collections
-    await db.salon_profile.drop()
-    await db.service_categories.drop()
-    await db.services.drop()
-    await db.gallery_images.drop()
-    await db.reviews.drop()
-    await db.offers.drop()
-    # Note: We don't drop admins collection to preserve login
-    
-    # Call seed function logic (without the admin check)
-    return {"message": "Database cleared. Please call /api/seed to reinitialize."}
-
-# Admin-only: Create new admin user
-class AdminCreate(BaseModel):
-    email: str
-    password: str
-    name: str
-
-@api_router.post("/admin/users")
-async def create_admin_user(data: AdminCreate, admin: dict = Depends(get_current_admin)):
-    """Admin-only: Create a new admin user"""
-    existing = await db.admins.find_one({"email": data.email})
-    if existing:
-        raise HTTPException(status_code=400, detail="Email already exists")
-    
-    new_admin = Admin(
-        email=data.email,
-        password_hash=hash_password(data.password),
-        name=data.name
-    )
-    await db.admins.insert_one(new_admin.model_dump())
-    return {"message": "Admin user created", "email": data.email}
-
-# Include the router in the main app
+# Include routers
 app.include_router(api_router)
+app.include_router(admin_router)
+app.include_router(salon_router)
+app.include_router(public_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -753,7 +1183,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
