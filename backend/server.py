@@ -656,11 +656,11 @@ async def admin_login(credentials: AdminLogin):
 async def get_current_admin_info(admin: dict = Depends(get_current_admin)):
     return {"id": admin["id"], "email": admin["email"], "name": admin["name"], "role": admin.get("role", UserRole.SALON_OWNER)}
 
-# ============== PLATFORM ADMIN ROUTES ==============
+# ============== ADMIN FEATURE ROUTES ==============
 
 @admin_router.get("/features")
-async def get_feature_flags(admin: dict = Depends(get_platform_admin)):
-    """Get all feature flags (Platform Admin only)"""
+async def get_feature_flags(admin: dict = Depends(get_salon_admin)):
+    """Get all feature flags (Salon Admin or higher)"""
     features = await db.feature_flags.find_one({"id": "global_features"}, {"_id": 0})
     if not features:
         # Create default feature flags
@@ -669,8 +669,8 @@ async def get_feature_flags(admin: dict = Depends(get_platform_admin)):
     return features
 
 @admin_router.patch("/features")
-async def update_feature_flags(data: FeatureFlagsUpdate, admin: dict = Depends(get_platform_admin)):
-    """Update feature flags (Platform Admin only)"""
+async def update_feature_flags(data: FeatureFlagsUpdate, admin: dict = Depends(get_salon_admin)):
+    """Update feature flags (Salon Admin or higher)"""
     update_data = {k: v for k, v in data.model_dump().items() if v is not None}
     update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
     update_data["updated_by"] = admin["email"]
