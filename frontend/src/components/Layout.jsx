@@ -155,7 +155,7 @@ export const Layout = () => {
                 <span className="text-xl font-semibold">{nameWithoutAccent}</span>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed max-w-md">
-                {salon?.aboutText || "Your destination for beauty and self-care."}
+                {salon?.footerTagline || salon?.tagline || "Your destination for beauty and self-care."}
               </p>
             </div>
 
