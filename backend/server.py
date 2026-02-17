@@ -503,6 +503,87 @@ async def check_slot_available(salon_id: str, start_time: str, end_time: str, ex
     # Available if overlapping bookings are less than total seats
     return overlapping_count < total_seats
 
+async def generate_whatsapp_notification(booking: dict, notification_type: str, salon: dict = None, new_time: str = None) -> str:
+    """Generate WhatsApp notification URL for booking updates"""
+    if not salon:
+        salon = await db.salon_profile.find_one({}, {"_id": 0})
+    
+    if not salon:
+        return None
+    
+    salon_name = salon.get("name", "Salon")
+    salon_phone = salon.get("whatsappNumber", "")
+    client_name = booking.get("clientName", "")
+    client_phone = booking.get("clientPhone", "")
+    service_name = booking.get("serviceName", "Service")
+    
+    start_time = parse_time(booking.get("startTime"))
+    formatted_date = start_time.strftime("%d %b %Y")
+    formatted_time = start_time.strftime("%I:%M %p")
+    booking_id = booking.get("id", "")[:8]
+    
+    if notification_type == "confirmed":
+        message = (
+            f"Hi {client_name}! 🎉\n"
+            f"\n"
+            f"Your appointment at *{salon_name}* has been *CONFIRMED*!\n"
+            f"\n"
+            f"*Booking Details:*\n"
+            f"📅 Date: {formatted_date}\n"
+            f"⏰ Time: {formatted_time}\n"
+            f"💇 Service: {service_name}\n"
+            f"🆔 Booking ID: {booking_id}\n"
+            f"\n"
+            f"We look forward to seeing you!\n"
+            f"\n"
+            f"If you need to reschedule or cancel, please contact us.\n"
+            f"\n"
+            f"Thank you! 💖"
+        )
+    elif notification_type == "cancelled":
+        message = (
+            f"Hi {client_name},\n"
+            f"\n"
+            f"Your appointment at *{salon_name}* has been *CANCELLED*.\n"
+            f"\n"
+            f"*Cancelled Booking:*\n"
+            f"📅 Date: {formatted_date}\n"
+            f"⏰ Time: {formatted_time}\n"
+            f"💇 Service: {service_name}\n"
+            f"🆔 Booking ID: {booking_id}\n"
+            f"\n"
+            f"We're sorry we couldn't serve you this time.\n"
+            f"Please book again whenever you're ready!\n"
+            f"\n"
+            f"Thank you for understanding. 🙏"
+        )
+    elif notification_type == "rescheduled":
+        new_start = parse_time(new_time) if new_time else start_time
+        new_formatted_date = new_start.strftime("%d %b %Y")
+        new_formatted_time = new_start.strftime("%I:%M %p")
+        message = (
+            f"Hi {client_name}! 📅\n"
+            f"\n"
+            f"Your appointment at *{salon_name}* has been *RESCHEDULED*.\n"
+            f"\n"
+            f"*New Booking Details:*\n"
+            f"📅 New Date: {new_formatted_date}\n"
+            f"⏰ New Time: {new_formatted_time}\n"
+            f"💇 Service: {service_name}\n"
+            f"🆔 Booking ID: {booking_id}\n"
+            f"\n"
+            f"Please confirm if this works for you.\n"
+            f"If not, let us know and we'll find another time!\n"
+            f"\n"
+            f"Thank you! 💖"
+        )
+    else:
+        return None
+    
+    encoded_message = quote(message, safe='')
+    whatsapp_url = f"https://wa.me/{client_phone}?text={encoded_message}"
+    return whatsapp_url
+
 # ============== PUBLIC ROUTES ==============
 
 @api_router.get("/")
