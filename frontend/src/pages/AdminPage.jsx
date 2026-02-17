@@ -1263,8 +1263,12 @@ function SalonEditForm({ data, onSave }) {
               <Label>CTA Button Text</Label>
               <Input value={form.ctaText || ""} onChange={(e) => setForm({ ...form, ctaText: e.target.value })} placeholder="Book Appointment" />
             </div>
+            <div className="space-y-2">
+              <Label>Footer Tagline</Label>
+              <Input value={form.footerTagline || ""} onChange={(e) => setForm({ ...form, footerTagline: e.target.value })} placeholder="Your destination for beauty and self-care." />
+            </div>
             <div className="border-t border-[#E6D5D0] pt-4 mt-4">
-              <p className="text-sm font-medium text-[#4A403A] mb-3">Section Headings</p>
+              <p className="text-sm font-medium text-[#4A403A] mb-3">Home Page Sections</p>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-xs">Services Heading</Label>
@@ -1304,6 +1308,37 @@ function SalonEditForm({ data, onSave }) {
                   <Label className="text-xs">View All Services Link</Label>
                   <Input value={form.viewAllServicesText || ""} onChange={(e) => setForm({ ...form, viewAllServicesText: e.target.value })} placeholder="View All Services" />
                 </div>
+              </div>
+            </div>
+            <div className="border-t border-[#E6D5D0] pt-4 mt-4">
+              <p className="text-sm font-medium text-[#4A403A] mb-3">Other Pages</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Services Page Title</Label>
+                  <Input value={form.servicesPageTitle || ""} onChange={(e) => setForm({ ...form, servicesPageTitle: e.target.value })} placeholder="Services & Price List" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Services Page Subtitle</Label>
+                  <Input value={form.servicesPageSubtitle || ""} onChange={(e) => setForm({ ...form, servicesPageSubtitle: e.target.value })} placeholder="Our Menu" />
+                </div>
+              </div>
+              <div className="space-y-2 mt-3">
+                <Label className="text-xs">Services Page Description</Label>
+                <Input value={form.servicesPageDescription || ""} onChange={(e) => setForm({ ...form, servicesPageDescription: e.target.value })} placeholder="Discover our comprehensive range..." />
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="space-y-2">
+                  <Label className="text-xs">Gallery Page Title</Label>
+                  <Input value={form.galleryPageTitle || ""} onChange={(e) => setForm({ ...form, galleryPageTitle: e.target.value })} placeholder="Our Gallery" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Gallery Page Subtitle</Label>
+                  <Input value={form.galleryPageSubtitle || ""} onChange={(e) => setForm({ ...form, galleryPageSubtitle: e.target.value })} placeholder="Portfolio" />
+                </div>
+              </div>
+              <div className="space-y-2 mt-3">
+                <Label className="text-xs">Gallery Page Description</Label>
+                <Input value={form.galleryPageDescription || ""} onChange={(e) => setForm({ ...form, galleryPageDescription: e.target.value })} placeholder="Browse through our collection..." />
               </div>
             </div>
           </>
