@@ -597,13 +597,29 @@ async def create_public_booking(data: BookingCreate):
     if not salon:
         raise HTTPException(status_code=404, detail="Salon not found")
     
-    service = await db.services.find_one({"id": data.serviceId, "active": True}, {"_id": 0})
-    if not service:
+    # Handle multiple services
+    service_ids = data.serviceIds if data.serviceIds else [data.serviceId]
+    services = []
+    total_duration = 0
+    total_price = 0
+    
+    for sid in service_ids:
+        service = await db.services.find_one({"id": sid, "active": True}, {"_id": 0})
+        if service:
+            services.append(service)
+            total_duration += service.get("durationMins", 30)
+            total_price += service.get("priceStartingAt", 0)
+    
+    if not services:
         raise HTTPException(status_code=404, detail="Service not found")
+    
+    # Use provided total duration or calculate from services
+    if data.totalDuration:
+        total_duration = data.totalDuration
     
     # Calculate end time
     start_time = parse_time(data.startTime)
-    end_time = start_time + timedelta(minutes=service.get("durationMins", 30))
+    end_time = start_time + timedelta(minutes=total_duration)
     
     # Check availability
     is_available = await check_slot_available(
@@ -615,10 +631,14 @@ async def create_public_booking(data: BookingCreate):
     if not is_available:
         raise HTTPException(status_code=409, detail="Time slot is no longer available")
     
+    # Build service name(s) for the booking
+    service_names = ", ".join([s.get("name", "") for s in services])
+    
     # Create booking
     booking = Booking(
         salonId=salon.get("id", "salon-1"),
-        serviceId=data.serviceId,
+        serviceId=data.serviceId,  # Primary service for backward compatibility
+        serviceName=service_names,  # Combined service names
         clientName=data.clientName,
         clientPhone=data.clientPhone,
         notes=data.notes,
@@ -630,12 +650,11 @@ async def create_public_booking(data: BookingCreate):
     await db.bookings.insert_one(booking.model_dump())
     
     # Generate WhatsApp message
-    service_name = service.get("name", "Service")
     salon_name = salon.get("name", "Salon")
     formatted_time = start_time.strftime("%I:%M %p")
     formatted_date = start_time.strftime("%d %b %Y")
     
-    whatsapp_message = f"Hi {salon_name}, I booked {service_name} on {formatted_date} at {formatted_time}. Booking ID: {booking.id}. Please confirm."
+    whatsapp_message = f"Hi {salon_name}, I booked {service_names} on {formatted_date} at {formatted_time}. Total: ₹{total_price}+ ({total_duration} mins). Booking ID: {booking.id[:8]}. Please confirm."
     whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={whatsapp_message}"
     
     return {
