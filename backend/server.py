@@ -125,6 +125,19 @@ class SalonProfile(BaseModel):
     exploreServicesText: str = "Explore Services"
     viewAllServicesText: str = "View All Services"
     currency: str = "₹"  # Currency symbol for prices
+    # Services page content
+    servicesPageTitle: str = "Services & Price List"
+    servicesPageSubtitle: str = "Our Menu"
+    servicesPageDescription: str = "Discover our comprehensive range of services designed to make you look and feel your best"
+    # Gallery page content
+    galleryPageTitle: str = "Our Gallery"
+    galleryPageSubtitle: str = "Portfolio"
+    galleryPageDescription: str = "Browse through our collection of beautiful transformations"
+    # Booking page content
+    bookingPageTitle: str = "Book Your Appointment"
+    bookingPageSubtitle: str = "Schedule"
+    # Footer content
+    footerTagline: str = "Your destination for beauty and self-care."
 
 class ServiceCategory(BaseModel):
     model_config = ConfigDict(extra="ignore")
