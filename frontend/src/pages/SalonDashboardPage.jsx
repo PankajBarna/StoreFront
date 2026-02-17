@@ -662,6 +662,15 @@ export default function SalonDashboardPage() {
                     >
                       No Show
                     </Button>
+                    <Button
+                      onClick={() => updateBookingStatus(selectedBooking.id, "cancelled")}
+                      variant="outline"
+                      className="col-span-2 border-red-200 text-red-600 hover:bg-red-50 rounded-xl"
+                      data-testid="cancel-confirmed-btn"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Cancel Booking
+                    </Button>
                   </>
                 )}
                 
