@@ -116,9 +116,10 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - POST /api/public/bookings - Create booking
 
 ### Salon Admin
+- GET /api/staff - List staff members
 - GET /api/salon/bookings - List bookings
 - GET /api/salon/bookings/{id} - Booking detail
-- PATCH /api/salon/bookings/{id}/status - Update status
+- PATCH /api/salon/bookings/{id}/status - Update status (with optional staffId)
 - PATCH /api/salon/bookings/{id}/reschedule - Reschedule
 - GET /api/salon/bookings/{id}/changes - Audit history
 
