@@ -161,6 +161,18 @@ class Offer(BaseModel):
     validTill: Optional[str] = None
     active: bool = True
 
+class Staff(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    role: str = "stylist"  # stylist, therapist, manager, etc.
+    specializations: List[str] = []  # e.g., ["haircut", "coloring", "facial"]
+    avatarUrl: Optional[str] = None
+    active: bool = True
+    createdAt: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
 class Admin(BaseModel):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
