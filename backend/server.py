@@ -680,7 +680,9 @@ async def create_public_booking(data: BookingCreate):
         f"Please confirm availability. Thank you!"
     )
     
-    whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={whatsapp_message}"
+    # URL encode the message for WhatsApp
+    encoded_message = quote(whatsapp_message, safe='')
+    whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={encoded_message}"
     
     return {
         "booking": booking.model_dump(),
