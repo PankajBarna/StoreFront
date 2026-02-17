@@ -144,6 +144,7 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - [x] Salon dashboard with FullCalendar
 - [x] Platform admin feature toggle
 - [x] Role-based access control
+- [x] **Reusable template system** - All salon-specific content from database (Completed Dec 2025)
 
 ### P1 - Next Phase
 - [ ] Image upload to cloud storage (currently URL-based)
