@@ -121,13 +121,14 @@ export default function AdminPage() {
   const fetchAllData = async () => {
     const headers = { Authorization: `Bearer ${token}` };
     try {
-      const [salonRes, catRes, svcRes, galRes, revRes, offRes, featuresRes] = await Promise.all([
+      const [salonRes, catRes, svcRes, galRes, revRes, offRes, staffRes, featuresRes] = await Promise.all([
         fetch(`${API}/salon`),
         fetch(`${API}/categories`),
         fetch(`${API}/services?active_only=false`),
         fetch(`${API}/gallery`),
         fetch(`${API}/reviews`),
         fetch(`${API}/offers?active_only=false`),
+        fetch(`${API}/staff?active_only=false`),
         fetch(`${API}/admin/features`, { headers })
       ]);
       
@@ -137,6 +138,7 @@ export default function AdminPage() {
       if (galRes.ok) setGallery(await galRes.json());
       if (revRes.ok) setReviews(await revRes.json());
       if (offRes.ok) setOffers(await offRes.json());
+      if (staffRes.ok) setStaff(await staffRes.json());
       if (featuresRes.ok) setFeatures(await featuresRes.json());
     } catch (e) {
       console.error("Error fetching data:", e);
