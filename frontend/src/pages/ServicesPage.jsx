@@ -52,12 +52,12 @@ export default function ServicesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="font-accent text-xl text-[#9D5C63] mb-2">Our Menu</p>
+          <p className="font-accent text-xl text-[#9D5C63] mb-2">{salon?.servicesPageSubtitle || "Our Menu"}</p>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-4">
-            Services & Price List
+            {salon?.servicesPageTitle || "Services & Price List"}
           </h1>
           <p className="text-[#8C7B75] max-w-2xl mx-auto">
-            Discover our comprehensive range of beauty services designed to make you look and feel your best
+            {salon?.servicesPageDescription || "Discover our comprehensive range of services"}
           </p>
         </div>
 
