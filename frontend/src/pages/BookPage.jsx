@@ -497,24 +497,42 @@ Please confirm availability. Thank you!`;
           )}
 
           {/* Step 3: Enter Details */}
-          {bookingStep === 3 && selectedService && selectedSlot && (
+          {bookingStep === 3 && selectedServices.length > 0 && selectedSlot && (
             <Card className="border-[#E6D5D0] rounded-2xl">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-xl text-[#4A403A]">Your Details</CardTitle>
-                  <Button variant="outline" size="sm" onClick={() => setBookingStep(2)}>
+                <div className="flex items-center gap-4 mb-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setBookingStep(2)}
+                    className="text-[#8C7B75] hover:text-[#4A403A] -ml-2"
+                    data-testid="back-to-datetime-btn"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
                     Back
                   </Button>
                 </div>
+                <CardTitle className="text-xl text-[#4A403A]">Your Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Booking Summary */}
                 <div className="bg-[#FDF8F5] p-4 rounded-xl">
-                  <p className="font-semibold text-[#4A403A]">{selectedService.name}</p>
-                  <p className="text-sm text-[#8C7B75]">
-                    {format(new Date(selectedSlot.startTime), "EEEE, d MMMM yyyy")} at {selectedSlot.display}
-                  </p>
-                  <p className="text-sm text-[#9D5C63] mt-1">₹{selectedService.priceStartingAt}+ • {selectedService.durationMins} mins</p>
+                  <p className="font-semibold text-[#4A403A] mb-2">Selected Services:</p>
+                  <div className="space-y-1 mb-3">
+                    {selectedServices.map(service => (
+                      <p key={service.id} className="text-sm text-[#8C7B75]">
+                        • {service.name} (₹{service.priceStartingAt}+, {service.durationMins} mins)
+                      </p>
+                    ))}
+                  </div>
+                  <div className="border-t border-[#E6D5D0] pt-3">
+                    <p className="text-sm text-[#8C7B75]">
+                      {format(new Date(selectedSlot.startTime), "EEEE, d MMMM yyyy")} at {selectedSlot.display}
+                    </p>
+                    <p className="text-sm font-semibold text-[#9D5C63] mt-1">
+                      Total: ₹{totalPrice}+ • {totalDuration} mins
+                    </p>
+                  </div>
                 </div>
 
                 {/* Form Fields */}
