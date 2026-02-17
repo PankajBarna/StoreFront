@@ -883,6 +883,47 @@ export default function AdminPage() {
                 </CardContent>
               </Card>
 
+              {/* Parallel Appointments (Seats) Setting */}
+              <Card className="border-[#E6D5D0] rounded-2xl">
+                <CardHeader className="pb-4">
+                  <CardTitle className="text-lg text-[#4A403A]">Parallel Appointments</CardTitle>
+                  <CardDescription>Set how many appointments can be booked at the same time (based on staff/chairs available)</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between p-4 rounded-xl bg-[#FDF8F5]">
+                    <div>
+                      <Label className="text-base font-medium text-[#4A403A]">Total Seats/Staff</Label>
+                      <p className="text-sm text-[#8C7B75]">
+                        Currently: {salon?.totalSeats || 1} seat{(salon?.totalSeats || 1) > 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <Select
+                      value={String(salon?.totalSeats || 1)}
+                      onValueChange={async (value) => {
+                        try {
+                          const res = await apiRequest("/admin/salon", "PATCH", { totalSeats: parseInt(value) });
+                          if (res) {
+                            setSalon({ ...salon, totalSeats: parseInt(value) });
+                            toast.success(`Total seats updated to ${value}`);
+                          }
+                        } catch (e) {
+                          toast.error("Failed to update seats");
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-24 rounded-xl border-[#E6D5D0]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+                          <SelectItem key={num} value={String(num)}>{num}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Metadata */}
               {features.updated_at && (
                 <Card className="border-[#E6D5D0] rounded-2xl">
