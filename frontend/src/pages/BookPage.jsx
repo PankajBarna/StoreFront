@@ -88,6 +88,9 @@ export default function BookPage() {
   // Calculate totals for selected services
   const totalPrice = selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
   const totalDuration = selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
+  
+  // Get currency from salon profile
+  const currency = salon?.currency || "₹";
 
   // Toggle service selection for calendar mode
   const toggleCalendarService = (service) => {
