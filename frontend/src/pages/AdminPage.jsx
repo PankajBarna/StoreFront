@@ -901,7 +901,7 @@ export default function AdminPage() {
                       value={String(salon?.totalSeats || 1)}
                       onValueChange={async (value) => {
                         try {
-                          const res = await apiRequest("/admin/salon", "PATCH", { totalSeats: parseInt(value) });
+                          const res = await apiCall("/admin/salon", "PATCH", { totalSeats: parseInt(value) });
                           if (res) {
                             setSalon({ ...salon, totalSeats: parseInt(value) });
                             toast.success(`Total seats updated to ${value}`);
