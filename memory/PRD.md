@@ -63,7 +63,12 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - ✅ Staff data model with CRUD APIs
   - Staff fields: id, name, phone, email, role, specializations, active
   - Pre-seeded 3 staff members: Priya Sharma, Neha Patel, Anjali Singh
-- ✅ Staff assignment to bookings
+- ✅ Staff CRUD in Admin Dashboard (`/admin` → Staff tab)
+  - Add new staff with name, phone, email, role, specializations
+  - Edit existing staff members
+  - Activate/Deactivate staff
+  - Delete staff members
+- ✅ Staff assignment to bookings (Salon Dashboard)
   - Assign staff when confirming pending booking
   - Update staff on already confirmed bookings
   - "Update Staff Assignment" button for confirmed bookings
