@@ -180,6 +180,7 @@ class Booking(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     salonId: str
     serviceId: str
+    serviceName: Optional[str] = None  # Combined service names for display
     staffId: Optional[str] = None
     clientName: str
     clientPhone: str
