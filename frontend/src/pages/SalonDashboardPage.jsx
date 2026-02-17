@@ -684,7 +684,7 @@ export default function SalonDashboardPage() {
                 {selectedBooking.status === "pending" && (
                   <>
                     <Button
-                      onClick={() => updateBookingStatus(selectedBooking.id, "confirmed", selectedStaffId || null)}
+                      onClick={() => updateBookingStatus(selectedBooking.id, "confirmed", selectedStaffId && selectedStaffId !== "none" ? selectedStaffId : null)}
                       className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl"
                       data-testid="confirm-booking-btn"
                     >
