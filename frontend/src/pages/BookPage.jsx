@@ -281,31 +281,39 @@ Please confirm availability. Thank you!`;
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-4">
               Book Your Appointment
             </h1>
-            <p className="text-[#8C7B75]">Select a service and pick your preferred time slot</p>
+            <p className="text-[#8C7B75]">Select your services and pick your preferred time slot</p>
           </div>
 
           {/* Progress Steps */}
           <div className="flex items-center justify-center gap-4 mb-10">
             {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+              <button
+                key={step}
+                onClick={() => {
+                  if (step < bookingStep) setBookingStep(step);
+                }}
+                disabled={step >= bookingStep}
+                className="flex items-center gap-2"
+              >
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
                   bookingStep >= step ? "bg-[#D69E8E] text-white" : "bg-[#F2E8E4] text-[#8C7B75]"
-                }`}>
+                } ${step < bookingStep ? "cursor-pointer hover:bg-[#C0806E]" : ""}`}>
                   {bookingStep > step ? <Check className="w-4 h-4" /> : step}
                 </div>
                 <span className={`text-sm hidden sm:inline ${bookingStep >= step ? "text-[#4A403A]" : "text-[#8C7B75]"}`}>
-                  {step === 1 ? "Service" : step === 2 ? "Date & Time" : "Details"}
+                  {step === 1 ? "Services" : step === 2 ? "Date & Time" : "Details"}
                 </span>
                 {step < 3 && <div className="w-8 h-px bg-[#E6D5D0]" />}
-              </div>
+              </button>
             ))}
           </div>
 
-          {/* Step 1: Select Service */}
+          {/* Step 1: Select Services (Multiple) */}
           {bookingStep === 1 && (
             <Card className="border-[#E6D5D0] rounded-2xl">
               <CardHeader>
-                <CardTitle className="text-xl text-[#4A403A]">Select a Service</CardTitle>
+                <CardTitle className="text-xl text-[#4A403A]">Select Services</CardTitle>
+                <p className="text-sm text-[#8C7B75]">Choose one or more services for your appointment</p>
               </CardHeader>
               <CardContent className="space-y-6">
                 {groupedServices.map((group) => (
@@ -314,32 +322,82 @@ Please confirm availability. Thank you!`;
                       {group.category.name}
                     </h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {group.services.map((service) => (
-                        <button
-                          key={service.id}
-                          onClick={() => {
-                            setSelectedService(service);
-                            setBookingStep(2);
-                          }}
-                          className="flex items-center justify-between p-4 rounded-xl bg-[#FDF8F5] border-2 border-transparent hover:border-[#D69E8E] transition-all text-left"
-                          data-testid={`select-service-${service.id}`}
-                        >
-                          <div>
-                            <p className="font-medium text-[#4A403A]">{service.name}</p>
-                            <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
-                          </div>
-                          <p className="font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</p>
-                        </button>
-                      ))}
+                      {group.services.map((service) => {
+                        const isSelected = selectedServices.find(s => s.id === service.id);
+                        return (
+                          <button
+                            key={service.id}
+                            onClick={() => toggleCalendarService(service)}
+                            className={`flex items-center justify-between p-4 rounded-xl transition-all text-left ${
+                              isSelected 
+                                ? "bg-[#D69E8E]/10 border-2 border-[#D69E8E]" 
+                                : "bg-[#FDF8F5] border-2 border-transparent hover:border-[#E6D5D0]"
+                            }`}
+                            data-testid={`select-service-${service.id}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                                isSelected ? "bg-[#D69E8E] text-white" : "bg-[#E6D5D0]"
+                              }`}>
+                                {isSelected ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4 text-[#8C7B75]" />}
+                              </div>
+                              <div>
+                                <p className="font-medium text-[#4A403A]">{service.name}</p>
+                                <p className="text-xs text-[#8C7B75]">{service.durationMins} mins</p>
+                              </div>
+                            </div>
+                            <p className="font-semibold text-[#9D5C63]">₹{service.priceStartingAt}+</p>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}
+
+                {/* Selected Services Summary */}
+                {selectedServices.length > 0 && (
+                  <div className="border-t border-[#E6D5D0] pt-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <p className="font-medium text-[#4A403A]">
+                          {selectedServices.length} service{selectedServices.length > 1 ? "s" : ""} selected
+                        </p>
+                        <p className="text-sm text-[#8C7B75]">
+                          Total: ₹{totalPrice}+ • {totalDuration} mins
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {selectedServices.map(service => (
+                        <Badge 
+                          key={service.id} 
+                          className="bg-[#D69E8E]/20 text-[#9D5C63] border-0 px-3 py-1"
+                        >
+                          {service.name}
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); toggleCalendarService(service); }}
+                            className="ml-2 hover:text-red-500"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                    <Button
+                      onClick={() => setBookingStep(2)}
+                      className="w-full bg-[#D69E8E] hover:bg-[#C0806E] text-white py-6 rounded-full"
+                      data-testid="continue-to-datetime-btn"
+                    >
+                      Continue to Date & Time
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
 
           {/* Step 2: Select Date & Time */}
-          {bookingStep === 2 && selectedService && (
+          {bookingStep === 2 && selectedServices.length > 0 && (
             <Card className="border-[#E6D5D0] rounded-2xl">
               <CardHeader>
                 <div className="flex items-center justify-between">
