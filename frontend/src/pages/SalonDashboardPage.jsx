@@ -133,6 +133,18 @@ export default function SalonDashboardPage() {
     }
   };
 
+  const fetchStaff = async () => {
+    try {
+      const res = await fetch(`${API}/staff`);
+      if (res.ok) {
+        const data = await res.json();
+        setStaff(data);
+      }
+    } catch (e) {
+      console.error("Error fetching staff:", e);
+    }
+  };
+
   const fetchFeatures = async () => {
     try {
       const res = await fetch(`${API}/features`);
