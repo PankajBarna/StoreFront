@@ -350,6 +350,7 @@ class BookingCreate(BaseModel):
 
 class BookingStatusUpdate(BaseModel):
     status: str
+    staffId: Optional[str] = None  # Allow staff assignment when updating status
 
 class BookingReschedule(BaseModel):
     newStartTime: str
