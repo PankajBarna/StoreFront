@@ -306,11 +306,13 @@ class FeatureFlagsUpdate(BaseModel):
     booking_calendar_enabled: Optional[bool] = None
 
 class BookingCreate(BaseModel):
-    serviceId: str
+    serviceId: str  # Primary service ID (for backward compatibility)
+    serviceIds: Optional[List[str]] = None  # Multiple service IDs
     clientName: str
     clientPhone: str
     startTime: str
     notes: Optional[str] = None
+    totalDuration: Optional[int] = None  # Total duration for multiple services
 
 class BookingStatusUpdate(BaseModel):
     status: str
