@@ -751,9 +751,7 @@ export default function SalonDashboardPage() {
 }
 
 // Dashboard Header Component
-function DashboardHeader({ salon, onLogout, userRole }) {
-  const navigate = useNavigate();
-  
+function DashboardHeader({ salon, onLogout }) {
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[#E6D5D0]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -778,17 +776,6 @@ function DashboardHeader({ salon, onLogout, userRole }) {
             >
               View Website
             </a>
-            
-            {userRole === "platform_admin" && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => navigate("/admin/features")}
-                className="rounded-full border-[#E6D5D0]"
-              >
-                Platform Settings
-              </Button>
-            )}
             
             <Button
               variant="outline"
