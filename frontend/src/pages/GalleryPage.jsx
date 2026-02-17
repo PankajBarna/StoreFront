@@ -83,12 +83,12 @@ export default function GalleryPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="font-accent text-xl text-[#9D5C63] mb-2">Our Work</p>
+          <p className="font-accent text-xl text-[#9D5C63] mb-2">{salon?.galleryPageSubtitle || "Portfolio"}</p>
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-4">
-            Gallery
+            {salon?.galleryPageTitle || "Our Gallery"}
           </h1>
           <p className="text-[#8C7B75] max-w-2xl mx-auto">
-            Browse through our transformations and see the magic we create
+            {salon?.galleryPageDescription || "Browse through our transformations and see the magic we create"}
           </p>
         </div>
 
