@@ -443,7 +443,7 @@ Please confirm availability. Thank you!`;
                     ))}
                   </div>
                   <p className="text-sm text-[#8C7B75] mt-2">
-                    Total: ₹{totalPrice}+ • {totalDuration} mins
+                    Total: {currency}{totalPrice}+ • {totalDuration} mins
                   </p>
                 </div>
               </CardHeader>
