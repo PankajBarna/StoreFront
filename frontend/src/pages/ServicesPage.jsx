@@ -102,7 +102,7 @@ export default function ServicesPage() {
                           {service.name}
                         </h3>
                         <p className="text-lg font-bold text-[#9D5C63] whitespace-nowrap">
-                          ₹{service.priceStartingAt}+
+                          {currency}{service.priceStartingAt}+
                         </p>
                       </div>
                       
