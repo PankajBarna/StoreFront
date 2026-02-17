@@ -123,7 +123,7 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - [ ] Image upload to cloud storage (currently URL-based)
 - [ ] Online payment integration (UPI/Card) for deposits
 - [ ] Email/SMS notifications for booking confirmations
-- [ ] Staff management & assignment to bookings
+- [x] Staff management & assignment to bookings (Completed Dec 2025)
 
 ### P2 - Future Enhancements
 - [ ] Loyalty points system
