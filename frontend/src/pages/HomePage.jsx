@@ -223,7 +223,7 @@ export default function HomePage() {
               className="inline-flex items-center gap-2 text-[#4A403A] font-medium hover:text-[#D69E8E] transition-colors group"
               data-testid="view-all-services-link"
             >
-              View All Services
+              {salon?.viewAllServicesText || "View All Services"}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
