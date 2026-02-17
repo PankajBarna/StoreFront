@@ -64,8 +64,8 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - Auth: JWT (PyJWT, bcrypt) with role-based access
 
 ## Admin Credentials
-- **Platform Admin:** platform@admin.com / platform123
-- **Salon Admin:** admin@glowbeauty.com / admin123
+- **Admin Dashboard:** admin@glowbeauty.com / admin123
+- **Salon Dashboard:** admin@glowbeauty.com / admin123 (same credentials, different access)
 
 ## Data Models
 
