@@ -659,21 +659,25 @@ async def create_public_booking(data: BookingCreate):
     # Build services list with bullet points
     services_text = "\n".join([f"• {s.get('name', '')} (₹{s.get('priceStartingAt', 0)}+, {s.get('durationMins', 30)} mins)" for s in services])
     
-    # Format message exactly like WhatsApp fallback
-    whatsapp_message = f"""Hi! I'd like to book an appointment at {salon_name}.
-
-*Name:* {data.clientName}
-
-*Services:*
-{services_text}
-
-*Estimated Total:* ₹{total_price}+ ({total_duration} mins)
-
-*Preferred Date:* {formatted_date}
-*Preferred Time:* {formatted_time}
-*Area:* {default_area}
-
-Please confirm availability. Thank you!"""
+    # Format message exactly like WhatsApp fallback (matching spacing from image)
+    whatsapp_message = (
+        f"Hi! I'd like to book an appointment at {salon_name}.\n"
+        f"\n"
+        f"*Name:* {data.clientName}\n"
+        f"\n"
+        f"*Services:*\n"
+        f"{services_text}\n"
+        f"\n"
+        f"*Estimated Total:* ₹{total_price}+ ({total_duration} mins)\n"
+        f"\n"
+        f"*Preferred Date:* {formatted_date}\n"
+        f"*Preferred Time:* {formatted_time}\n"
+        f"*Area:* {default_area}\n"
+        f"\n"
+        f"*Booking ID:* {booking.id[:8]}\n"
+        f"\n"
+        f"Please confirm availability. Thank you!"
+    )
     
     whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={whatsapp_message}"
     
