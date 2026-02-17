@@ -161,10 +161,10 @@ export default function HomePage() {
               Services
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A] mb-4">
-              Popular Treatments
+              {salon?.servicesHeading || "Popular Treatments"}
             </h2>
             <p className="text-[#8C7B75] max-w-md mx-auto">
-              Discover our most loved services, crafted for your beauty needs
+              {salon?.servicesSubheading || "Discover our most loved services"}
             </p>
           </div>
 
