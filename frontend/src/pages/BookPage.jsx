@@ -205,8 +205,8 @@ export default function BookPage() {
   };
 
   // WhatsApp fallback functions
-  const totalPrice = formData.selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
-  const totalDuration = formData.selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
+  const whatsappTotalPrice = formData.selectedServices.reduce((sum, s) => sum + s.priceStartingAt, 0);
+  const whatsappTotalDuration = formData.selectedServices.reduce((sum, s) => sum + s.durationMins, 0);
 
   const toggleService = (service) => {
     setFormData(prev => {
