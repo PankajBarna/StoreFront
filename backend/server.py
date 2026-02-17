@@ -309,6 +309,24 @@ class OfferUpdate(BaseModel):
     validTill: Optional[str] = None
     active: Optional[bool] = None
 
+class StaffCreate(BaseModel):
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    role: str = "stylist"
+    specializations: List[str] = []
+    avatarUrl: Optional[str] = None
+    active: bool = True
+
+class StaffUpdate(BaseModel):
+    name: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    specializations: Optional[List[str]] = None
+    avatarUrl: Optional[str] = None
+    active: Optional[bool] = None
+
 class AdminLogin(BaseModel):
     email: str
     password: str
