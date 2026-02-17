@@ -60,6 +60,10 @@ export default function SalonDashboardPage() {
   const [calendarRef, setCalendarRef] = useState(null);
   const [currentDateRange, setCurrentDateRange] = useState({ start: null, end: null });
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Tooltip state for hover
+  const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, booking: null });
+  const tooltipRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
