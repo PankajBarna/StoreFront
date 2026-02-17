@@ -116,7 +116,7 @@ export default function HomePage() {
                 className="inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white/30 hover:border-white/60 text-white px-10 py-5 rounded-full font-medium text-base backdrop-blur-sm transition-all duration-500 hover:bg-white/10"
                 data-testid="hero-services-btn"
               >
-                Explore Services
+                {salon?.exploreServicesText || "Explore Services"}
               </Link>
             </div>
             
