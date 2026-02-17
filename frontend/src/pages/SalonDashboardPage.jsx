@@ -48,6 +48,7 @@ export default function SalonDashboardPage() {
   // Data
   const [bookings, setBookings] = useState([]);
   const [services, setServices] = useState([]);
+  const [staff, setStaff] = useState([]);
   const [salon, setSalon] = useState(null);
   const [features, setFeatures] = useState({ booking_calendar_enabled: false });
   
@@ -60,6 +61,7 @@ export default function SalonDashboardPage() {
   const [calendarRef, setCalendarRef] = useState(null);
   const [currentDateRange, setCurrentDateRange] = useState({ start: null, end: null });
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedStaffId, setSelectedStaffId] = useState("");
   
   // Tooltip state for hover
   const [tooltip, setTooltip] = useState({ visible: false, x: 0, y: 0, booking: null });
