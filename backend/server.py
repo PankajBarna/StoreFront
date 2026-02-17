@@ -1080,14 +1080,19 @@ async def get_salon_bookings(
     
     bookings = await db.bookings.find(query, {"_id": 0}).sort("startTime", 1).to_list(500)
     
-    # Enrich with service names
+    # Enrich with service names and staff names
     services = {s["id"]: s for s in await db.services.find({}, {"_id": 0}).to_list(100)}
+    staff_members = {s["id"]: s for s in await db.staff.find({}, {"_id": 0}).to_list(100)}
     
     for booking in bookings:
         service = services.get(booking.get("serviceId"))
         if service:
             booking["serviceName"] = service.get("name")
             booking["serviceDuration"] = service.get("durationMins")
+        
+        staff = staff_members.get(booking.get("staffId"))
+        if staff:
+            booking["staffName"] = staff.get("name")
     
     return {"bookings": bookings, "total": len(bookings)}
 
