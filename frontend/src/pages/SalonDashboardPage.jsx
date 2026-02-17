@@ -442,8 +442,7 @@ export default function SalonDashboardPage() {
                     }}
                     nowIndicator={true}
                     allDaySlot={false}
-                    slotEventOverlap={false}
-                    eventMaxStack={3}
+                    slotEventOverlap={true}
                     businessHours={{
                       daysOfWeek: [1, 2, 3, 4, 5, 6, 0],
                       startTime: salon?.workingHoursJson?.[0]?.open || "10:00",
