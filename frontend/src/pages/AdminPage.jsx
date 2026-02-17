@@ -1150,45 +1150,201 @@ export default function AdminPage() {
 // Form Components
 function SalonEditForm({ data, onSave }) {
   const [form, setForm] = useState(data || {});
+  const [activeSection, setActiveSection] = useState("basic");
+  
+  const sections = [
+    { id: "basic", label: "Basic Info" },
+    { id: "branding", label: "Branding" },
+    { id: "content", label: "Content" },
+    { id: "social", label: "Social" }
+  ];
   
   return (
     <>
       <DialogHeader>
         <DialogTitle>Edit Salon Profile</DialogTitle>
+        <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
+          {sections.map(section => (
+            <Button 
+              key={section.id}
+              variant={activeSection === section.id ? "default" : "outline"}
+              size="sm"
+              onClick={() => setActiveSection(section.id)}
+              className={activeSection === section.id ? "bg-[#D69E8E] hover:bg-[#C0806E]" : ""}
+            >
+              {section.label}
+            </Button>
+          ))}
+        </div>
       </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="space-y-2">
-          <Label>Name</Label>
-          <Input value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Area</Label>
-          <Input value={form.area || ""} onChange={(e) => setForm({ ...form, area: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Address</Label>
-          <Textarea value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Phone</Label>
-          <Input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>WhatsApp Number</Label>
-          <Input value={form.whatsappNumber || ""} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Opening Hours</Label>
-          <Input value={form.openingHours || ""} onChange={(e) => setForm({ ...form, openingHours: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Google Maps URL</Label>
-          <Input value={form.googleMapsUrl || ""} onChange={(e) => setForm({ ...form, googleMapsUrl: e.target.value })} />
-        </div>
-        <div className="space-y-2">
-          <Label>Instagram URL</Label>
-          <Input value={form.instagramUrl || ""} onChange={(e) => setForm({ ...form, instagramUrl: e.target.value })} />
-        </div>
+      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+        {/* Basic Info Section */}
+        {activeSection === "basic" && (
+          <>
+            <div className="space-y-2">
+              <Label>Salon Name</Label>
+              <Input value={form.name || ""} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Brand Accent (highlighted word)</Label>
+              <Input value={form.brandAccent || ""} onChange={(e) => setForm({ ...form, brandAccent: e.target.value })} placeholder="e.g., Glow" />
+            </div>
+            <div className="space-y-2">
+              <Label>Area</Label>
+              <Input value={form.area || ""} onChange={(e) => setForm({ ...form, area: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Address</Label>
+              <Textarea value={form.address || ""} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Phone</Label>
+                <Input value={form.phone || ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              </div>
+              <div className="space-y-2">
+                <Label>WhatsApp Number</Label>
+                <Input value={form.whatsappNumber || ""} onChange={(e) => setForm({ ...form, whatsappNumber: e.target.value })} placeholder="919876543210" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Opening Hours</Label>
+              <Input value={form.openingHours || ""} onChange={(e) => setForm({ ...form, openingHours: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Google Maps URL</Label>
+              <Input value={form.googleMapsUrl || ""} onChange={(e) => setForm({ ...form, googleMapsUrl: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Currency Symbol</Label>
+              <Input value={form.currency || ""} onChange={(e) => setForm({ ...form, currency: e.target.value })} placeholder="₹" />
+            </div>
+          </>
+        )}
+        
+        {/* Branding Section */}
+        {activeSection === "branding" && (
+          <>
+            <div className="space-y-2">
+              <Label>Hero Image URL</Label>
+              <Input value={form.heroImageUrl || ""} onChange={(e) => setForm({ ...form, heroImageUrl: e.target.value })} />
+              {form.heroImageUrl && (
+                <img src={form.heroImageUrl} alt="Hero preview" className="w-full h-32 object-cover rounded-lg mt-2" />
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Logo URL</Label>
+              <Input value={form.logoUrl || ""} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Primary Color</Label>
+                <div className="flex gap-2">
+                  <Input type="color" value={form.primaryColor || "#D69E8E"} onChange={(e) => setForm({ ...form, primaryColor: e.target.value })} className="w-12 h-10 p-1" />
+                  <Input value={form.primaryColor || "#D69E8E"} onChange={(e) => setForm({ ...form, primaryColor: e.target.value })} />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>Accent Color</Label>
+                <div className="flex gap-2">
+                  <Input type="color" value={form.accentColor || "#9D5C63"} onChange={(e) => setForm({ ...form, accentColor: e.target.value })} className="w-12 h-10 p-1" />
+                  <Input value={form.accentColor || "#9D5C63"} onChange={(e) => setForm({ ...form, accentColor: e.target.value })} />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Content Section */}
+        {activeSection === "content" && (
+          <>
+            <div className="space-y-2">
+              <Label>Tagline</Label>
+              <Input value={form.tagline || ""} onChange={(e) => setForm({ ...form, tagline: e.target.value })} placeholder="Your destination for beauty and self-care" />
+            </div>
+            <div className="space-y-2">
+              <Label>About Text</Label>
+              <Textarea value={form.aboutText || ""} onChange={(e) => setForm({ ...form, aboutText: e.target.value })} rows={3} />
+            </div>
+            <div className="space-y-2">
+              <Label>Hero Title</Label>
+              <Input value={form.heroTitle || ""} onChange={(e) => setForm({ ...form, heroTitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Hero Subtitle</Label>
+              <Input value={form.heroSubtitle || ""} onChange={(e) => setForm({ ...form, heroSubtitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>CTA Button Text</Label>
+              <Input value={form.ctaText || ""} onChange={(e) => setForm({ ...form, ctaText: e.target.value })} placeholder="Book Appointment" />
+            </div>
+            <div className="border-t border-[#E6D5D0] pt-4 mt-4">
+              <p className="text-sm font-medium text-[#4A403A] mb-3">Section Headings</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs">Services Heading</Label>
+                  <Input value={form.servicesHeading || ""} onChange={(e) => setForm({ ...form, servicesHeading: e.target.value })} placeholder="Popular Treatments" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Services Subheading</Label>
+                  <Input value={form.servicesSubheading || ""} onChange={(e) => setForm({ ...form, servicesSubheading: e.target.value })} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="space-y-2">
+                  <Label className="text-xs">Testimonials Heading</Label>
+                  <Input value={form.testimonialsHeading || ""} onChange={(e) => setForm({ ...form, testimonialsHeading: e.target.value })} placeholder="Client Love" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Testimonials Subheading</Label>
+                  <Input value={form.testimonialsSubheading || ""} onChange={(e) => setForm({ ...form, testimonialsSubheading: e.target.value })} placeholder="Testimonials" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="space-y-2">
+                  <Label className="text-xs">CTA Section Heading</Label>
+                  <Input value={form.ctaSectionHeading || ""} onChange={(e) => setForm({ ...form, ctaSectionHeading: e.target.value })} placeholder="Book Your Experience" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">CTA Section Subheading</Label>
+                  <Input value={form.ctaSectionSubheading || ""} onChange={(e) => setForm({ ...form, ctaSectionSubheading: e.target.value })} placeholder="Ready?" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div className="space-y-2">
+                  <Label className="text-xs">Explore Services Button</Label>
+                  <Input value={form.exploreServicesText || ""} onChange={(e) => setForm({ ...form, exploreServicesText: e.target.value })} placeholder="Explore Services" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">View All Services Link</Label>
+                  <Input value={form.viewAllServicesText || ""} onChange={(e) => setForm({ ...form, viewAllServicesText: e.target.value })} placeholder="View All Services" />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+        
+        {/* Social Section */}
+        {activeSection === "social" && (
+          <>
+            <div className="space-y-2">
+              <Label>Instagram URL</Label>
+              <Input value={form.instagramUrl || ""} onChange={(e) => setForm({ ...form, instagramUrl: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Facebook URL</Label>
+              <Input value={form.facebookUrl || ""} onChange={(e) => setForm({ ...form, facebookUrl: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Meta Title (SEO)</Label>
+              <Input value={form.metaTitle || ""} onChange={(e) => setForm({ ...form, metaTitle: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Meta Description (SEO)</Label>
+              <Textarea value={form.metaDescription || ""} onChange={(e) => setForm({ ...form, metaDescription: e.target.value })} rows={2} />
+            </div>
+          </>
+        )}
       </div>
       <DialogFooter>
         <Button onClick={() => onSave(form)} className="bg-[#D69E8E] hover:bg-[#C0806E]">Save Changes</Button>
