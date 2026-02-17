@@ -274,10 +274,10 @@ export default function HomePage() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
               <span className="inline-block text-sm font-medium text-[#D69E8E] tracking-[0.2em] uppercase mb-4">
-                Testimonials
+                {salon?.testimonialsSubheading || "Testimonials"}
               </span>
               <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#4A403A]">
-                Client Love
+                {salon?.testimonialsHeading || "Client Love"}
               </h2>
             </div>
 
