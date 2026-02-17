@@ -91,6 +91,7 @@ export default function SalonDashboardPage() {
       await Promise.all([
         fetchSalonData(),
         fetchServices(),
+        fetchStaff(),
         fetchFeatures()
       ]);
       
