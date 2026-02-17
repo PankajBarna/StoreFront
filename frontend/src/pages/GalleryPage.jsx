@@ -11,26 +11,28 @@ export default function GalleryPage() {
   const [activeTag, setActiveTag] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [salon, setSalon] = useState(null);
 
   useEffect(() => {
-    fetchGalleryData();
+    fetchData();
   }, []);
 
-  const fetchGalleryData = async () => {
+  const fetchData = async () => {
     try {
-      const [imagesRes, tagsRes] = await Promise.all([
+      const [imagesRes, tagsRes, salonRes] = await Promise.all([
         fetch(`${API}/gallery`),
-        fetch(`${API}/gallery/tags`)
+        fetch(`${API}/gallery/tags`),
+        fetch(`${API}/salon`)
       ]);
       
       if (imagesRes.ok) {
-        const imagesData = await imagesRes.json();
-        setImages(imagesData);
+        setImages(await imagesRes.json());
       }
-      
       if (tagsRes.ok) {
-        const tagsData = await tagsRes.json();
-        setTags(tagsData);
+        setTags(await tagsRes.json());
+      }
+      if (salonRes.ok) {
+        setSalon(await salonRes.json());
       }
     } catch (e) {
       console.error("Error fetching gallery:", e);
