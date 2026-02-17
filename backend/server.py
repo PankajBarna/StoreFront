@@ -574,7 +574,7 @@ async def get_public_features():
 # ============== PUBLIC BOOKING ROUTES ==============
 
 @public_router.get("/availability")
-async def get_availability(serviceId: str, date: str):
+async def get_availability(serviceId: str, date: str, totalDuration: int = None):
     """Get available time slots for a service on a given date"""
     await check_booking_enabled()
     
@@ -582,7 +582,7 @@ async def get_availability(serviceId: str, date: str):
     if not salon:
         raise HTTPException(status_code=404, detail="Salon not found")
     
-    slots = await get_available_slots(salon.get("id", "salon-1"), serviceId, date)
+    slots = await get_available_slots(salon.get("id", "salon-1"), serviceId, date, totalDuration)
     return {"slots": slots, "date": date, "serviceId": serviceId}
 
 @public_router.post("/bookings")
