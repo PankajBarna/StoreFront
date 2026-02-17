@@ -1050,40 +1050,25 @@ export default function AdminPage() {
               <Card className="border-[#E6D5D0] rounded-2xl">
                 <CardHeader className="pb-4">
                   <CardTitle className="text-lg text-[#4A403A]">Parallel Appointments</CardTitle>
-                  <CardDescription>Set how many appointments can be booked at the same time (based on staff/chairs available)</CardDescription>
+                  <CardDescription>Number of appointments that can be booked at the same time (based on active staff)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between p-4 rounded-xl bg-[#FDF8F5]">
                     <div>
-                      <Label className="text-base font-medium text-[#4A403A]">Total Seats/Staff</Label>
+                      <Label className="text-base font-medium text-[#4A403A]">Active Staff Members</Label>
                       <p className="text-sm text-[#8C7B75]">
-                        Currently: {salon?.totalSeats || 1} seat{(salon?.totalSeats || 1) > 1 ? "s" : ""}
+                        Currently: {staff.filter(s => s.active).length} active staff
                       </p>
                     </div>
-                    <Select
-                      value={String(salon?.totalSeats || 1)}
-                      onValueChange={async (value) => {
-                        try {
-                          const res = await apiCall("/admin/salon", "PATCH", { totalSeats: parseInt(value) });
-                          if (res) {
-                            setSalon({ ...salon, totalSeats: parseInt(value) });
-                            toast.success(`Total seats updated to ${value}`);
-                          }
-                        } catch (e) {
-                          toast.error("Failed to update seats");
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="w-24 rounded-xl border-[#E6D5D0]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                          <SelectItem key={num} value={String(num)}>{num}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div className="text-right">
+                      <span className="text-3xl font-bold text-[#9D5C63]">{staff.filter(s => s.active).length}</span>
+                      <p className="text-xs text-[#8C7B75]">parallel slots</p>
+                    </div>
                   </div>
+                  <p className="text-xs text-[#8C7B75] mt-3 flex items-center gap-1">
+                    <Users className="w-3 h-3" />
+                    Add or deactivate staff in the <button onClick={() => setActiveTab("staff")} className="text-[#D69E8E] underline font-medium">Staff tab</button> to change this number
+                  </p>
                 </CardContent>
               </Card>
 
