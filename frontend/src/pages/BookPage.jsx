@@ -384,7 +384,7 @@ Please confirm availability. Thank you!`;
                           {selectedServices.length} service{selectedServices.length > 1 ? "s" : ""} selected
                         </p>
                         <p className="text-sm text-[#8C7B75]">
-                          Total: ₹{totalPrice}+ • {totalDuration} mins
+                          Total: {currency}{totalPrice}+ • {totalDuration} mins
                         </p>
                       </div>
                     </div>
