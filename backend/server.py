@@ -965,14 +965,14 @@ async def reschedule_booking(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
     
-    # Get service for duration
-    service = await db.services.find_one({"id": booking.get("serviceId")}, {"_id": 0})
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
+    # Calculate duration from existing booking (preserves multi-service duration)
+    old_start_time = parse_time(booking.get("startTime"))
+    old_end_time = parse_time(booking.get("endTime"))
+    duration_mins = int((old_end_time - old_start_time).total_seconds() / 60)
     
-    # Calculate new end time
+    # Calculate new end time using the same duration
     new_start = parse_time(data.newStartTime)
-    new_end = new_start + timedelta(minutes=service.get("durationMins", 30))
+    new_end = new_start + timedelta(minutes=duration_mins)
     
     # Check if new slot is available (excluding current booking)
     is_available = await check_slot_available(
