@@ -9,6 +9,9 @@ import BookPage from "@/pages/BookPage";
 import GalleryPage from "@/pages/GalleryPage";
 import PoliciesPage from "@/pages/PoliciesPage";
 import AdminPage from "@/pages/AdminPage";
+import SalonLoginPage from "@/pages/SalonLoginPage";
+import SalonDashboardPage from "@/pages/SalonDashboardPage";
+import PlatformFeaturesPage from "@/pages/PlatformFeaturesPage";
 
 // Components
 import { Layout } from "@/components/Layout";
@@ -26,6 +29,9 @@ function App() {
             <Route path="/policies" element={<PoliciesPage />} />
           </Route>
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/salon/login" element={<SalonLoginPage />} />
+          <Route path="/salon/dashboard" element={<SalonDashboardPage />} />
+          <Route path="/admin/features" element={<PlatformFeaturesPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-center" richColors />
