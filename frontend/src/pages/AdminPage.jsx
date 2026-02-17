@@ -1434,3 +1434,144 @@ function OfferEditForm({ data, onSave }) {
     </>
   );
 }
+
+
+function StaffEditForm({ data, onSave }) {
+  const [form, setForm] = useState(data || { 
+    name: "", 
+    phone: "", 
+    email: "", 
+    role: "stylist",
+    specializations: [],
+    avatarUrl: "",
+    active: true 
+  });
+  const [newSpec, setNewSpec] = useState("");
+  
+  const addSpecialization = () => {
+    if (newSpec.trim() && !form.specializations?.includes(newSpec.trim())) {
+      setForm({ ...form, specializations: [...(form.specializations || []), newSpec.trim()] });
+      setNewSpec("");
+    }
+  };
+  
+  const removeSpecialization = (spec) => {
+    setForm({ ...form, specializations: form.specializations?.filter(s => s !== spec) || [] });
+  };
+  
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{data ? "Edit Staff Member" : "Add Staff Member"}</DialogTitle>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label>Name *</Label>
+          <Input 
+            value={form.name || ""} 
+            onChange={(e) => setForm({ ...form, name: e.target.value })} 
+            placeholder="Enter full name"
+            data-testid="staff-name-input"
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>Phone</Label>
+            <Input 
+              value={form.phone || ""} 
+              onChange={(e) => setForm({ ...form, phone: e.target.value })} 
+              placeholder="9876543210"
+              data-testid="staff-phone-input"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <Input 
+              type="email"
+              value={form.email || ""} 
+              onChange={(e) => setForm({ ...form, email: e.target.value })} 
+              placeholder="staff@salon.com"
+              data-testid="staff-email-input"
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label>Role</Label>
+          <Select value={form.role || "stylist"} onValueChange={(v) => setForm({ ...form, role: v })}>
+            <SelectTrigger data-testid="staff-role-select">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="stylist">Stylist</SelectItem>
+              <SelectItem value="senior_stylist">Senior Stylist</SelectItem>
+              <SelectItem value="therapist">Therapist</SelectItem>
+              <SelectItem value="beautician">Beautician</SelectItem>
+              <SelectItem value="nail_artist">Nail Artist</SelectItem>
+              <SelectItem value="manager">Manager</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Specializations</Label>
+          <div className="flex gap-2">
+            <Input 
+              value={newSpec} 
+              onChange={(e) => setNewSpec(e.target.value)} 
+              placeholder="e.g., Hair Coloring"
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addSpecialization())}
+              data-testid="staff-spec-input"
+            />
+            <Button type="button" variant="outline" onClick={addSpecialization} className="shrink-0">
+              Add
+            </Button>
+          </div>
+          {form.specializations?.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {form.specializations.map((spec, i) => (
+                <span 
+                  key={i} 
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-[#FDF8F5] text-[#4A403A] text-sm rounded-lg"
+                >
+                  {spec}
+                  <button 
+                    type="button"
+                    onClick={() => removeSpecialization(spec)} 
+                    className="text-[#8C7B75] hover:text-red-500"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label>Avatar URL (optional)</Label>
+          <Input 
+            value={form.avatarUrl || ""} 
+            onChange={(e) => setForm({ ...form, avatarUrl: e.target.value })} 
+            placeholder="https://..."
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch 
+            checked={form.active !== false} 
+            onCheckedChange={(v) => setForm({ ...form, active: v })} 
+            data-testid="staff-active-toggle"
+          />
+          <Label>Active</Label>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button 
+          onClick={() => onSave(form)} 
+          className="bg-[#D69E8E] hover:bg-[#C0806E]" 
+          disabled={!form.name?.trim()}
+          data-testid="save-staff-btn"
+        >
+          {data ? "Update Staff" : "Add Staff"}
+        </Button>
+      </DialogFooter>
+    </>
+  );
+}
