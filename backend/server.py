@@ -1000,6 +1000,11 @@ async def reschedule_booking(
     new_start = parse_time(data.newStartTime)
     new_end = new_start + timedelta(minutes=duration_mins)
     
+    # Validation: Cannot reschedule to a time earlier than current time
+    now = datetime.now(IST)
+    if new_start < now:
+        raise HTTPException(status_code=400, detail="Cannot reschedule to a time in the past")
+    
     # Check if new slot is available (excluding current booking)
     is_available = await check_slot_available(
         booking.get("salonId"),
