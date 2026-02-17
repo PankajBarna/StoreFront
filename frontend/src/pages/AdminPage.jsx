@@ -343,6 +343,44 @@ export default function AdminPage() {
     }
   };
 
+  // Staff handlers
+  const handleSaveStaff = async (data) => {
+    try {
+      if (editDialog.data?.id) {
+        await apiCall(`/admin/staff/${editDialog.data.id}`, "PUT", data);
+        toast.success("Staff member updated!");
+      } else {
+        await apiCall("/admin/staff", "POST", data);
+        toast.success("Staff member created!");
+      }
+      fetchAllData();
+      setEditDialog({ open: false, type: "", data: null });
+    } catch (e) {
+      toast.error("Failed to save staff member");
+    }
+  };
+
+  const handleToggleStaff = async (id, currentActive) => {
+    try {
+      await apiCall(`/admin/staff/${id}`, "PUT", { active: !currentActive });
+      toast.success(`Staff ${!currentActive ? "activated" : "deactivated"}!`);
+      fetchAllData();
+    } catch (e) {
+      toast.error("Failed to toggle staff status");
+    }
+  };
+
+  const handleDeleteStaff = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this staff member?")) return;
+    try {
+      await apiCall(`/admin/staff/${id}`, "DELETE");
+      toast.success("Staff member deleted!");
+      fetchAllData();
+    } catch (e) {
+      toast.error("Failed to delete staff member");
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FFFCFA]">
