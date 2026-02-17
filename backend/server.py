@@ -289,6 +289,16 @@ class SalonProfileUpdate(BaseModel):
     exploreServicesText: Optional[str] = None
     viewAllServicesText: Optional[str] = None
     currency: Optional[str] = None
+    # Page content
+    servicesPageTitle: Optional[str] = None
+    servicesPageSubtitle: Optional[str] = None
+    servicesPageDescription: Optional[str] = None
+    galleryPageTitle: Optional[str] = None
+    galleryPageSubtitle: Optional[str] = None
+    galleryPageDescription: Optional[str] = None
+    bookingPageTitle: Optional[str] = None
+    bookingPageSubtitle: Optional[str] = None
+    footerTagline: Optional[str] = None
 
 class ServiceCategoryCreate(BaseModel):
     name: str
