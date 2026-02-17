@@ -136,7 +136,6 @@ Build a mobile-first web storefront for a ladies salon in Dombivli. Features inc
 - `/book` - Client booking (calendar or WhatsApp)
 - `/gallery` - Photo gallery
 - `/policies` - FAQ & policies
-- `/admin` - Content admin panel
-- `/salon/login` - Salon owner login
-- `/salon/dashboard` - Booking management dashboard
-- `/admin/features` - Platform admin features
+- `/admin` - Content admin panel (with Settings tab for feature toggle)
+- `/salon/login` - Salon staff login
+- `/salon/dashboard` - Booking management dashboard (view and manage only)
