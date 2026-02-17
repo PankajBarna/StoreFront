@@ -227,22 +227,26 @@ export default function SalonDashboardPage() {
     info.revert();
   };
 
-  const updateBookingStatus = async (bookingId, status) => {
+  const updateBookingStatus = async (bookingId, status, staffId = null) => {
     try {
+      const bodyData = { status };
+      if (staffId) bodyData.staffId = staffId;
+      
       const res = await fetch(`${API}/salon/bookings/${bookingId}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ status })
+        body: JSON.stringify(bodyData)
       });
       
       if (res.ok) {
         const data = await res.json();
-        toast.success(`Booking ${status}`);
+        toast.success(`Booking ${status}${staffId ? ' and assigned to staff' : ''}`);
         fetchBookings(currentDateRange.start, currentDateRange.end);
         setBookingDetailOpen(false);
+        setSelectedStaffId("");
         
         // Open WhatsApp notification if available (for confirmed or cancelled)
         if (data.whatsappNotificationUrl && (status === "confirmed" || status === "cancelled")) {
