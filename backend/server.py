@@ -650,15 +650,16 @@ async def create_public_booking(data: BookingCreate):
     
     await db.bookings.insert_one(booking.model_dump())
     
-    # Generate WhatsApp message (matching the WhatsApp fallback format)
+    # Generate WhatsApp message (matching the WhatsApp fallback format exactly)
     salon_name = salon.get("name", "Salon")
     formatted_time = start_time.strftime("%I:%M %p")
     formatted_date = start_time.strftime("%d %b %Y")
     default_area = salon.get("defaultArea", salon.get("area", ""))
     
-    # Build services list
+    # Build services list with bullet points
     services_text = "\n".join([f"• {s.get('name', '')} (₹{s.get('priceStartingAt', 0)}+, {s.get('durationMins', 30)} mins)" for s in services])
     
+    # Format message exactly like WhatsApp fallback
     whatsapp_message = f"""Hi! I'd like to book an appointment at {salon_name}.
 
 *Name:* {data.clientName}
@@ -672,7 +673,6 @@ async def create_public_booking(data: BookingCreate):
 *Preferred Time:* {formatted_time}
 *Area:* {default_area}
 
-Booking ID: {booking.id[:8]}
 Please confirm availability. Thank you!"""
     
     whatsapp_url = f"https://wa.me/{salon.get('whatsappNumber', '')}?text={whatsapp_message}"
