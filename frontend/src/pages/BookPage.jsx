@@ -189,12 +189,21 @@ export default function BookPage() {
         const data = await res.json();
         toast.success("Booking created successfully!");
         
-        // Open WhatsApp to confirm
+        // Open WhatsApp to confirm - use location.href for mobile compatibility
         if (data.whatsappUrl) {
-          window.open(data.whatsappUrl, '_blank', 'noopener,noreferrer');
+          // Check if mobile device
+          const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+          if (isMobile) {
+            // On mobile, direct navigation works better
+            window.location.href = data.whatsappUrl;
+          } else {
+            // On desktop, open in new tab
+            window.open(data.whatsappUrl, '_blank', 'noopener,noreferrer');
+            navigate("/");
+          }
+        } else {
+          navigate("/");
         }
-        
-        navigate("/");
       } else {
         const error = await res.json();
         toast.error(error.detail || "Failed to create booking");
