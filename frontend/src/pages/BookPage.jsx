@@ -729,11 +729,11 @@ Please confirm availability. Thank you!`;
                     <div className="border-t border-[#E6D5D0] pt-4">
                       <div className="flex justify-between text-sm mb-2">
                         <span className="text-[#8C7B75]">Estimated Duration</span>
-                        <span className="font-medium text-[#4A403A]">{totalDuration} mins</span>
+                        <span className="font-medium text-[#4A403A]">{whatsappTotalDuration} mins</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-[#8C7B75]">Estimated Total</span>
-                        <span className="text-lg font-bold text-[#9D5C63]">₹{totalPrice}+</span>
+                        <span className="text-lg font-bold text-[#9D5C63]">₹{whatsappTotalPrice}+</span>
                       </div>
                     </div>
                   </>
