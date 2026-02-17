@@ -1136,6 +1136,11 @@ export default function AdminPage() {
           {editDialog.type === "offer" && (
             <OfferEditForm data={editDialog.data} onSave={handleSaveOffer} />
           )}
+          
+          {/* Staff Edit */}
+          {editDialog.type === "staff" && (
+            <StaffEditForm data={editDialog.data} onSave={handleSaveStaff} />
+          )}
         </DialogContent>
       </Dialog>
     </div>
