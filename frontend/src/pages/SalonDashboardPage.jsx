@@ -700,6 +700,17 @@ export default function SalonDashboardPage() {
                 
                 {selectedBooking.status === "confirmed" && (
                   <>
+                    {/* Show Update Staff button only if staff selection changed */}
+                    {selectedStaffId && selectedStaffId !== selectedBooking.staffId && (
+                      <Button
+                        onClick={() => updateBookingStatus(selectedBooking.id, "confirmed", selectedStaffId)}
+                        className="col-span-2 bg-[#9D5C63] hover:bg-[#8D4C53] text-white rounded-xl"
+                        data-testid="update-staff-btn"
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        Update Staff Assignment
+                      </Button>
+                    )}
                     <Button
                       onClick={() => updateBookingStatus(selectedBooking.id, "completed")}
                       className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl"
