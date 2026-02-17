@@ -42,7 +42,6 @@ const CALENDAR_EVENT_COLORS = {
 export default function SalonDashboardPage() {
   const navigate = useNavigate();
   const [token] = useState(localStorage.getItem("salon_token") || "");
-  const [userRole] = useState(localStorage.getItem("salon_role") || "");
   const [loading, setLoading] = useState(true);
   const [bookingsLoading, setBookingsLoading] = useState(false);
   
