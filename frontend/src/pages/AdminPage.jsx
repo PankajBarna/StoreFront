@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { 
   LogIn, LogOut, Eye, EyeOff, Plus, Edit, Trash2, ToggleLeft, ToggleRight,
-  Sparkles, Menu, X, Home, Scissors, Image, Star, Gift, Settings, Search
+  Sparkles, Menu, X, Home, Scissors, Image, Star, Gift, Settings, Search,
+  Calendar, CheckCircle, AlertTriangle
 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
