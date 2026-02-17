@@ -400,16 +400,30 @@ Please confirm availability. Thank you!`;
           {bookingStep === 2 && selectedServices.length > 0 && (
             <Card className="border-[#E6D5D0] rounded-2xl">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-xl text-[#4A403A]">Select Date & Time</CardTitle>
-                    <p className="text-sm text-[#8C7B75] mt-1">
-                      {selectedService.name} • {selectedService.durationMins} mins • ₹{selectedService.priceStartingAt}+
-                    </p>
-                  </div>
-                  <Button variant="outline" size="sm" onClick={() => { setBookingStep(1); setSelectedService(null); setSelectedDate(null); setSelectedSlot(null); }}>
-                    Change
+                <div className="flex items-center gap-4 mb-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setBookingStep(1)}
+                    className="text-[#8C7B75] hover:text-[#4A403A] -ml-2"
+                    data-testid="back-to-services-btn"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-1" />
+                    Back
                   </Button>
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-[#4A403A]">Select Date & Time</CardTitle>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedServices.map(service => (
+                      <Badge key={service.id} className="bg-[#D69E8E]/20 text-[#9D5C63] border-0">
+                        {service.name}
+                      </Badge>
+                    ))}
+                  </div>
+                  <p className="text-sm text-[#8C7B75] mt-2">
+                    Total: ₹{totalPrice}+ • {totalDuration} mins
+                  </p>
                 </div>
               </CardHeader>
               <CardContent className="space-y-6">
